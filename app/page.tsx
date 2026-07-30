@@ -21,6 +21,7 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'forgot' | 'reset'>('signin');
   const [activeSection, setActiveSection] = useState<string>("hero");
   const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
 
@@ -35,6 +36,12 @@ export default function Home() {
   // Synchronize Supabase Auth
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setAuthMode("reset");
+        setIsAuthOpen(true);
+        return;
+      }
+
       const user = session?.user;
       if (user) {
         // Fetch detailed profile for roles (admin vs client)
@@ -114,7 +121,7 @@ export default function Home() {
       {/* Sticky frosted glass navbar */}
       <Navbar
         onNavigate={scrollToSection}
-        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAuth={() => { setAuthMode('signin'); setIsAuthOpen(true); }}
         currentUser={currentUser}
         onLogout={handleLogout}
       />
@@ -134,7 +141,7 @@ export default function Home() {
         <BookingForm
           key={currentUser ? currentUser.uid : "guest"}
           currentUser={currentUser}
-          onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenAuth={() => { setAuthMode('signin'); setIsAuthOpen(true); }}
           onSuccessRedirect={() => scrollToSection("portal")}
         />
       </div>
@@ -216,7 +223,7 @@ export default function Home() {
 
                 <div className="pt-2">
                   <button
-                    onClick={() => setIsAuthOpen(true)}
+                    onClick={() => { setAuthMode('signin'); setIsAuthOpen(true); }}
                     className="btn-liquid-glass px-6 py-3.5 text-white font-bold text-xs tracking-widest uppercase cursor-pointer"
                   >
                     Enter Private Hub
@@ -247,6 +254,7 @@ export default function Home() {
           <AuthPortal
             onClose={() => setIsAuthOpen(false)}
             onSuccess={handleAuthSuccess}
+            initialMode={authMode}
           />
         )}
       </AnimatePresence>

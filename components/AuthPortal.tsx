@@ -4,15 +4,18 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { createUserProfile } from "@/lib/db";
-import { X, Mail, Lock, User, KeyRound, Sparkles, Loader2, Info, Eye, EyeOff } from "lucide-react";
+import { X, Mail, Lock, User, KeyRound, Sparkles, Loader2, Info, Eye, EyeOff, ArrowLeft } from "lucide-react";
+
+export type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
 
 interface AuthPortalProps {
   onClose: () => void;
   onSuccess: (user: any) => void;
+  initialMode?: AuthMode;
 }
 
-export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
-  const [isSignUp, setIsSignUp] = useState<boolean>(false);
+export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' }: AuthPortalProps) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -21,16 +24,73 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (mode === 'forgot') {
+      if (!email) {
+        setErrorMessage("Please enter your email address.");
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/`,
+        });
+        if (error) throw error;
+        setSuccessMessage("A password reset link has been sent to your email address.");
+      } catch (error: any) {
+        console.error("Reset password error:", error);
+        setErrorMessage(error.message || "Could not send reset link. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (mode === 'reset') {
+      if (!password || !confirmPassword) {
+        setErrorMessage("Please fill in both password fields.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMessage("Passwords do not match. Please check and try again.");
+        return;
+      }
+      if (password.length < 6) {
+        setErrorMessage("Password must be at least 6 characters long.");
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+        setSuccessMessage("Your password has been updated successfully! Swapping back to Log In...");
+        setTimeout(() => {
+          setMode('signin');
+          setSuccessMessage("");
+          setPassword("");
+          setConfirmPassword("");
+        }, 2500);
+      } catch (error: any) {
+        console.error("Update password error:", error);
+        setErrorMessage(error.message || "Could not update password. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
 
     if (!email || !password) {
       setErrorMessage("Please fill in both email and password.");
       return;
     }
 
-    if (isSignUp) {
+    if (mode === 'signup') {
       if (!name) {
         setErrorMessage("Please enter your name.");
         return;
@@ -46,10 +106,8 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
     }
 
     setIsSubmitting(true);
-    setErrorMessage("");
-
     try {
-      if (isSignUp) {
+      if (mode === 'signup') {
         // Sign Up Flow
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -111,6 +169,24 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
     onClose();
   };
 
+  const getTitle = () => {
+    switch (mode) {
+      case 'signup': return "Create User ID";
+      case 'forgot': return "Recover Password";
+      case 'reset': return "Reset Password";
+      default: return "Secure User Portal";
+    }
+  };
+
+  const getSubtitle = () => {
+    switch (mode) {
+      case 'signup': return "Register your Graphix Lab account on our secure portal";
+      case 'forgot': return "Enter your email to receive a secure password recovery link";
+      case 'reset': return "Enter your new password to regain access to your account";
+      default: return "Sign in to access your projects and manage design bookings";
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Dark overlay with blur */}
@@ -147,10 +223,10 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
             <Sparkles className="w-5 h-5" />
           </div>
           <h3 className="text-xl md:text-2xl font-black text-white tracking-tight uppercase">
-            {isSignUp ? "Create User ID" : "Secure User Portal"}
+            {getTitle()}
           </h3>
           <p className="text-purple-200/50 text-xs mt-1 leading-relaxed">
-            {isSignUp ? "Register your Graphix Lab account on our secure portal" : "Sign in to access your projects and manage design bookings"}
+            {getSubtitle()}
           </p>
         </div>
 
@@ -160,10 +236,16 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
           </div>
         )}
 
+        {successMessage && (
+          <div className="p-3.5 mb-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-xs">
+            {successMessage}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name Field (Sign Up Only) */}
           <AnimatePresence>
-            {isSignUp && (
+            {mode === 'signup' && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -177,7 +259,7 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
                   <User className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                   <input
                     type="text"
-                    required={isSignUp}
+                    required
                     placeholder="Enter your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -188,53 +270,72 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
             )}
           </AnimatePresence>
 
-          {/* Email Field */}
-          <div className="space-y-1">
-            <label className="text-purple-300 text-[10px] font-bold uppercase tracking-widest block">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-white focus:outline-none focus:border-purple-400 focus:bg-white/[0.04] transition-all duration-300 text-xs"
-              />
+          {/* Email Field (Sign In, Sign Up, and Forgot modes) */}
+          {mode !== 'reset' && (
+            <div className="space-y-1">
+              <label className="text-purple-300 text-[10px] font-bold uppercase tracking-widest block">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
+                <input
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-white focus:outline-none focus:border-purple-400 focus:bg-white/[0.04] transition-all duration-300 text-xs"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Password Field with Eye Toggle */}
-          <div className="space-y-1">
-            <label className="text-purple-300 text-[10px] font-bold uppercase tracking-widest block">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-white focus:outline-none focus:border-purple-400 focus:bg-white/[0.04] transition-all duration-300 text-xs"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-purple-400/70 hover:text-purple-200 transition-colors cursor-pointer"
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+          {/* Password Field (Sign In, Sign Up, and Reset modes) */}
+          {mode !== 'forgot' && (
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <label className="text-purple-300 text-[10px] font-bold uppercase tracking-widest block">
+                  {mode === 'reset' ? "New Password" : "Password"}
+                </label>
+                {mode === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('forgot');
+                      setErrorMessage("");
+                      setSuccessMessage("");
+                    }}
+                    className="text-[9px] text-purple-400 hover:text-white transition-colors duration-200 font-semibold cursor-pointer"
+                  >
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-white focus:outline-none focus:border-purple-400 focus:bg-white/[0.04] transition-all duration-300 text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-purple-400/70 hover:text-purple-200 transition-colors cursor-pointer"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Confirm Password Field (Sign Up Only) with Eye Toggle */}
+          {/* Confirm Password Field (Sign Up and Reset modes) */}
           <AnimatePresence>
-            {isSignUp && (
+            {(mode === 'signup' || mode === 'reset') && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -248,7 +349,7 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
-                    required={isSignUp}
+                    required
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -282,7 +383,12 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
               ) : (
                 <>
                   <KeyRound className="w-3.5 h-3.5" />
-                  <span>{isSignUp ? "Generate Account" : "Enter into Graphix Lab"}</span>
+                  <span>
+                    {mode === 'signup' && "Generate Account"}
+                    {mode === 'forgot' && "Send Reset Link"}
+                    {mode === 'reset' && "Update Password"}
+                    {mode === 'signin' && "Enter into Graphix Lab"}
+                  </span>
                 </>
               )}
             </button>
@@ -291,36 +397,53 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
 
         {/* Toggle and Info Section */}
         <div className="mt-5 border-t border-white/5 pt-4 text-center space-y-3">
-          <button
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setErrorMessage("");
-            }}
-            className="text-xs text-purple-400 hover:text-white transition-colors duration-200 font-medium cursor-pointer"
-          >
-            {isSignUp ? "Already have an account? Log In" : "Need a new account? Sign Up"}
-          </button>
+          {mode === 'forgot' || mode === 'reset' ? (
+            <button
+              onClick={() => {
+                setMode('signin');
+                setErrorMessage("");
+                setSuccessMessage("");
+              }}
+              className="text-xs text-purple-400 hover:text-white transition-colors duration-200 font-medium cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>Back to Log In</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setMode(mode === 'signin' ? 'signup' : 'signin');
+                setErrorMessage("");
+                setSuccessMessage("");
+              }}
+              className="text-xs text-purple-400 hover:text-white transition-colors duration-200 font-medium cursor-pointer"
+            >
+              {mode === 'signin' ? "Need a new account? Sign Up" : "Already have an account? Log In"}
+            </button>
+          )}
 
-          {/* Quick Demo Mode Access */}
-          <div className="pt-2">
-            <p className="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider mb-2">Instant Demo Session</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoAccess("client")}
-                className="btn-liquid-glass-secondary py-2 px-3 text-purple-200 text-xs font-semibold cursor-pointer"
-              >
-                Client Demo
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoAccess("admin")}
-                className="btn-liquid-glass py-2 px-3 text-purple-200 text-xs font-semibold cursor-pointer"
-              >
-                Admin Demo
-              </button>
+          {/* Quick Demo Mode Access (Only show during login/signup) */}
+          {(mode === 'signin' || mode === 'signup') && (
+            <div className="pt-2">
+              <p className="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider mb-2">Instant Demo Session</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDemoAccess("client")}
+                  className="btn-liquid-glass-secondary py-2 px-3 text-purple-200 text-xs font-semibold cursor-pointer"
+                >
+                  Client Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoAccess("admin")}
+                  className="btn-liquid-glass py-2 px-3 text-purple-200 text-xs font-semibold cursor-pointer"
+                >
+                  Admin Demo
+                </button>
+              </div>
             </div>
-          </div>
+          )}
           
           <div className="flex items-start gap-2 text-[10px] text-purple-400/50 text-left p-2.5 rounded-xl bg-white/[0.01]">
             <Info className="w-3.5 h-3.5 shrink-0 text-purple-500/50" />
@@ -331,4 +454,3 @@ export default function AuthPortal({ onClose, onSuccess }: AuthPortalProps) {
     </div>
   );
 }
-
