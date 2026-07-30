@@ -1,32 +1,32 @@
 @import "tailwindcss";
 
 body {
-  background-color: #0D0B18;
+  background-color: #0A0813;
   color: #ffffff;
 }
 
 @theme {
-  /* Original Cyberpunk Purple-Teal Palette */
-  --color-obsidian-violet: #0D0B18;     /* Main Background */
-  --color-slate-blue: #8A2BE2;          /* Primary Brand Accent: Laser Purple */
-  --color-soft-periwinkle: #00F5FF;     /* Secondary Accent: Neon Cyan */
+  /* Premium Pure Purple/Violet Theme Mapped to the Saturated Cosmic Spectrum */
+  --color-obsidian-violet: #0A0813;     /* Deep Space Dark Violet Background */
+  --color-slate-blue: #8B5CF6;          /* Primary Accent: Vibrant Purple/Violet */
+  --color-soft-periwinkle: #A855F7;     /* Secondary Accent: Bright Purple */
   --color-wisteria-lavender: #C084FC;   /* Text & Subtle Borders: Light Purple */
-  --color-powder-petal: #A5F3FC;        /* Top Highlights: Light Teal/Cyan */
+  --color-powder-petal: #E9D5FF;        /* Highlights: Soft Lavender */
 
-  /* Cyber overrides mapped to the high-energy cyber spectrum */
+  /* Cyber overrides mapped to the deep purple space spectrum */
   --color-cyber-50: #fbf9ff;
-  --color-cyber-100: #f7f3ff;
-  --color-cyber-200: #eddffd;
-  --color-cyber-300: #A5F3FC;     /* Powder Petal */
-  --color-cyber-400: #C084FC;     /* Wisteria Lavender */
-  --color-cyber-500: #8A2BE2;     /* Primary: Laser Purple */
-  --color-cyber-600: #00F5FF;     /* Secondary: Neon Cyan */
-  --color-cyber-700: #131026;     /* Primary Dark Background / Cards */
-  --color-cyber-800: #0a0915;     /* Deep space background */
-  --color-cyber-900: #0D0B18;     /* Obsidian Violet */
-  --color-cyber-950: #06050b;     /* Deepest space violet */
+  --color-cyber-100: #f5eeff;
+  --color-cyber-200: #e9d5ff;
+  --color-cyber-300: #d8b4fe;     /* Soft Lavender */
+  --color-cyber-400: #c084fc;     /* Wisteria Lavender */
+  --color-cyber-500: #8b5cf6;     /* Primary: Vibrant Purple */
+  --color-cyber-600: #a855f7;     /* Secondary: Bright Purple */
+  --color-cyber-700: #120e25;     /* Card Dark Background */
+  --color-cyber-800: #080612;     /* Deepest Space Background */
+  --color-cyber-900: #0a0813;     /* Obsidian Violet */
+  --color-cyber-950: #04030a;     /* Deepest Void */
 
-  /* Map standard purple and indigo classes to the original premium cyber purple/violet palette */
+  /* Map standard purple and indigo classes to the premium purple theme */
   --color-purple-50: var(--color-cyber-50);
   --color-purple-100: var(--color-cyber-100);
   --color-purple-200: var(--color-cyber-200);
@@ -52,73 +52,64 @@ body {
   --color-indigo-950: var(--color-cyber-950);
 
   /* Set dark-mode base tones to deep dark purple background to harmonize perfectly */
-  --color-zinc-900: #131026;
-  --color-zinc-950: #0D0B18;
+  --color-zinc-900: #120e25;
+  --color-zinc-950: #0a0813;
 }
 
-/* Hyper-realistic 3D "Liquid Glass" (Glassmorphism) buttons with laser purple & neon cyan */
+/* Saturated Solid "Liquid Glass" CTA Button - Matching screenshot exactly */
 .btn-liquid-glass {
-  background: linear-gradient(135deg, rgba(138, 43, 226, 0.4) 0%, rgba(102, 252, 241, 0.3) 50%, rgba(138, 43, 226, 0.2) 100%);
-  border: 1px solid rgba(138, 43, 226, 0.25);
-  border-top: 1px solid rgba(102, 252, 241, 0.65);
+  background: #8b5cf6; /* Saturated vibrant purple */
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 10px 30px -10px rgba(138, 43, 226, 0.55), 0 10px 30px -15px rgba(102, 252, 241, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+  transition: all 0.25s ease-in-out;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .btn-liquid-glass:hover {
-  transform: translateY(-2px) scale(1.02);
-  backdrop-filter: blur(24px) saturate(220%);
-  -webkit-backdrop-filter: blur(24px) saturate(220%);
-  box-shadow: 0 15px 35px -5px rgba(138, 43, 226, 0.75), 0 15px 35px -10px rgba(102, 252, 241, 0.55), inset 0 1px 3px rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(138, 43, 226, 0.35);
-  border-top: 1px solid rgba(102, 252, 241, 0.85);
+  background: #7c3aed; /* Saturated deep violet */
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5);
 }
 
 .btn-liquid-glass:active {
-  transform: translateY(1px) scale(0.98);
+  transform: translateY(1px);
 }
 
-/* Secondary CTA: 'EXPLORE PORTFOLIO' (Dark frosted glass with subtle stroke) */
+/* Secondary CTA (Darker frosted glass with subtle stroke) */
 .btn-liquid-glass-secondary {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(138, 43, 226, 0.15) 50%, rgba(102, 252, 241, 0.08) 100%);
-  border: 1px solid rgba(138, 43, 226, 0.15);
-  border-top: 1px solid rgba(102, 252, 241, 0.35);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(139, 92, 246, 0.15);
   border-radius: 9999px;
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.5);
+  transition: all 0.25s ease-in-out;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #c084fc;
 }
 
 .btn-liquid-glass-secondary:hover {
-  transform: translateY(-2px) scale(1.02);
-  backdrop-filter: blur(18px) saturate(180%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  box-shadow: 0 15px 30px -5px rgba(138, 43, 226, 0.4), 0 15px 30px -10px rgba(102, 252, 241, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(138, 43, 226, 0.25);
-  border-top: 1px solid rgba(102, 252, 241, 0.6);
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #ffffff;
+  transform: translateY(-1.5px);
 }
 
 .btn-liquid-glass-secondary:active {
-  transform: translateY(1px) scale(0.98);
+  transform: translateY(1px);
 }
 
-/* Custom text gradient neon using the original high-energy spectrum */
+/* Pure purple/lavender/indigo text gradient */
 .text-gradient-neon {
-  background: linear-gradient(90deg, #8A2BE2 0%, #A855f7 33%, #00F5FF 66%, #66FCF1 100%);
+  background: linear-gradient(90deg, #a855f7 0%, #c084fc 40%, #e9d5ff 70%, #818cf8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
   display: inline-block;
 }
-

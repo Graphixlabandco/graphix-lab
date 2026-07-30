@@ -44,10 +44,10 @@ export default function UniverseBackground() {
         x: Math.random() * width - width / 2,
         y: Math.random() * height - height / 2,
         z: Math.random() * depth,
-        color: i % 10 === 0 
-          ? "rgba(138, 43, 226, 0.85)" // Secondary Accent / Laser Purple (#8A2BE2)
-          : i % 15 === 0 
-            ? "rgba(102, 252, 241, 0.85)" // Neon Cyan (#66FCF1)
+        color: i % 8 === 0 
+          ? "rgba(138, 43, 226, 0.85)" // Laser Purple (#8A2BE2)
+          : i % 12 === 0 
+            ? "rgba(168, 85, 247, 0.85)" // Soft Purple (#A855F7)
             : "rgba(255, 255, 255, 0.9)", // White stars
         size: Math.random() * 1.5 + 0.5,
       });
@@ -69,7 +69,7 @@ export default function UniverseBackground() {
         vx: -0.1,
         vy: -0.12,
         radius: Math.min(width, height) * 0.5,
-        color: "rgba(69, 162, 158, 0.04)", // Electric Teal (#45A29E)
+        color: "rgba(99, 102, 241, 0.04)", // Soft Indigo (#6366F1)
       },
       {
         x: width * 0.5,
@@ -77,7 +77,7 @@ export default function UniverseBackground() {
         vx: 0.05,
         vy: -0.08,
         radius: Math.min(width, height) * 0.4,
-        color: "rgba(102, 252, 241, 0.04)", // Neon Cyan (#66FCF1)
+        color: "rgba(168, 85, 247, 0.04)", // Soft Purple (#A855F7)
       },
     ];
 
@@ -108,7 +108,7 @@ export default function UniverseBackground() {
         color: i % 4 === 0 
           ? "rgba(138, 43, 226, 0.6)" // Laser Purple spiral dust (#8A2BE2)
           : i % 3 === 0 
-            ? "rgba(69, 162, 158, 0.5)" // Electric Teal spiral dust (#45A29E)
+            ? "rgba(168, 85, 247, 0.5)" // Soft Purple spiral dust (#A855F7)
             : "rgba(255, 255, 255, 0.6)",
       });
     }
@@ -128,7 +128,7 @@ export default function UniverseBackground() {
     // Loop renderer
     const tick = () => {
       // Very deep rich dark workspace background with absolute opacity control
-      ctx.fillStyle = "rgba(13, 11, 24, 1)";
+      ctx.fillStyle = "rgba(10, 8, 19, 1)";
       ctx.fillRect(0, 0, width, height);
 
       // 1. Draw Nebulae dust clouds
@@ -217,7 +217,7 @@ export default function UniverseBackground() {
     <canvas
        ref={canvasRef}
        id="universe-background-canvas"
-       className="fixed inset-0 w-full h-full z-[-20] pointer-events-none bg-[#0D0B18]"
+       className="fixed inset-0 w-full h-full z-[-20] pointer-events-none bg-[#0A0813]"
        style={{ mixBlendMode: "normal" }}
     />
   );
