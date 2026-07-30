@@ -71,6 +71,14 @@ export async function POST(request: Request) {
       }),
     });
 
+    console.log("Client email status:", clientEmailRes.status);
+    try {
+      const clientBody = await clientEmailRes.text();
+      console.log("Client email body:", clientBody);
+    } catch (e) {
+      console.error("Could not parse client email response body");
+    }
+
     // Send email to admin
     const adminEmailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -79,12 +87,20 @@ export async function POST(request: Request) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: 'Graphix Lab Admin <onboarding@resend.dev>',
+        from: 'Graphix Lab <onboarding@resend.dev>', // Match exact same display name
         to: adminEmail,
         subject: `Graphix Lab | NEW ORDER REQUEST: ${serviceType}`,
         html: adminHtml,
       }),
     });
+
+    console.log("Admin email status:", adminEmailRes.status);
+    try {
+      const adminBody = await adminEmailRes.text();
+      console.log("Admin email body:", adminBody);
+    } catch (e) {
+      console.error("Could not parse admin email response body");
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
