@@ -18,6 +18,19 @@ export default function Hero({ onActionClick }: HeroProps) {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-purple-500/10 blur-[120px] pointer-events-none z-1" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none z-1" />
 
+      {/* Centered Background Logo Video Animation */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full max-w-[1200px] h-full max-h-[80vh] object-contain opacity-25 mix-blend-screen"
+        >
+          <source src="/logo.mp4" type="video/mp4" />
+        </video>
+      </div>
+
       {/* Main Content Container - Reduced glassmorphism opacity so the background video is highly visible */}
       <div 
         id="hero-content-wrapper"

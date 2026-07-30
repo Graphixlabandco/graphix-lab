@@ -20,114 +20,116 @@ export default function Navbar({ onNavigate, onOpenAuth, currentUser, onLogout }
   };
 
   return (
-    <motion.header
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="fixed top-0 left-0 w-full z-50 px-4 md:px-8 py-4"
-    >
-      <div 
-        id="navbar-container"
-        className="max-w-7xl mx-auto rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 px-4 md:px-6 py-3 flex items-center justify-between shadow-[0_8px_32px_0_rgba(147,51,234,0.07)]"
+    <>
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="fixed top-0 left-0 w-full z-50 px-4 md:px-8 py-4"
       >
-        {/* Left Hand Menu Trigger for Mobile */}
-        <button
-          id="nav-menu-toggle-left"
-          onClick={() => setMobileMenuOpen(true)}
-          className="btn-liquid-glass md:hidden flex items-center justify-center p-2.5 text-purple-200 cursor-pointer mr-2"
-          aria-label="Open menu drawer"
+        <div 
+          id="navbar-container"
+          className="max-w-7xl mx-auto rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 px-4 md:px-6 py-3 flex items-center justify-between shadow-[0_8px_32px_0_rgba(147,51,234,0.07)]"
         >
-          <Menu className="w-5 h-5" />
-        </button>
+          {/* Left Hand Menu Trigger for Mobile */}
+          <button
+            id="nav-menu-toggle-left"
+            onClick={() => setMobileMenuOpen(true)}
+            className="btn-liquid-glass md:hidden flex items-center justify-center p-2.5 text-purple-200 cursor-pointer mr-2"
+            aria-label="Open menu drawer"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
 
-        {/* Logo & Title Section */}
-        <button 
-          id="nav-logo"
-          onClick={() => handleNavClick("hero")} 
-          className="flex items-center gap-2.5 text-white font-bold text-xl tracking-wider cursor-pointer group"
-        >
-          <img
-            src="https://cdn.postimage.me/2026/07/30/1000070682.png"
-            alt="GraphixLab Logo"
-            referrerPolicy="no-referrer"
-            className="w-8 h-8 rounded-full object-cover border border-purple-500/30 group-hover:border-purple-400 transition-colors bg-black/40"
-          />
-          <span className="text-gradient-neon font-extrabold uppercase text-lg tracking-wider">
-            Graphix Lab
-          </span>
-        </button>
+          {/* Logo & Title Section */}
+          <button 
+            id="nav-logo"
+            onClick={() => handleNavClick("hero")} 
+            className="flex items-center gap-2.5 text-white font-bold text-xl tracking-wider cursor-pointer group"
+          >
+            <img
+              src="https://cdn.postimage.me/2026/07/30/1000070682.png"
+              alt="GraphixLab Logo"
+              referrerPolicy="no-referrer"
+              className="w-8 h-8 rounded-full object-cover border border-purple-500/30 group-hover:border-purple-400 transition-colors bg-black/40"
+            />
+            <span className="text-gradient-neon font-extrabold uppercase text-lg tracking-wider">
+              Graphix Lab
+            </span>
+          </button>
 
-        {/* Center Navigation links (Desktop) */}
-        <nav className="hidden md:flex items-center gap-8 text-sm">
-          <button
-            id="nav-link-home"
-            onClick={() => handleNavClick("home")}
-            className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
-          >
-            Home
-          </button>
-          <button
-            id="nav-link-portfolio"
-            onClick={() => handleNavClick("portfolio")}
-            className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
-          >
-            Services
-          </button>
-          <button
-            id="nav-link-booking"
-            onClick={() => handleNavClick("booking")}
-            className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
-          >
-            Book Design
-          </button>
-          <button
-            id="nav-link-workflow"
-            onClick={() => handleNavClick("workflow")}
-            className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
-          >
-            Workflow
-          </button>
-          <button
-            id="nav-link-inquire"
-            onClick={() => handleNavClick("inquire")}
-            className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
-          >
-            Reviews
-          </button>
-        </nav>
-
-        {/* Right CTA / Auth Status */}
-        <div className="flex items-center gap-3">
-          {currentUser ? (
-            <div className="flex items-center gap-2">
-              <button
-                id="nav-btn-dashboard"
-                onClick={() => handleNavClick("portal")}
-                className="btn-liquid-glass flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-purple-200 cursor-pointer"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>My Hub</span>
-              </button>
-              <button
-                id="nav-btn-logout"
-                onClick={onLogout}
-                className="hidden md:block px-3 py-1.5 text-xs text-red-300/80 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-300 cursor-pointer"
-              >
-                Sign Out
-              </button>
-            </div>
-          ) : (
+          {/* Center Navigation links (Desktop) */}
+          <nav className="hidden md:flex items-center gap-8 text-sm">
             <button
-              id="nav-btn-auth"
-              onClick={onOpenAuth}
-              className="btn-liquid-glass flex items-center justify-center gap-1.5 w-[110px] sm:w-auto h-[38px] px-3 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white cursor-pointer shrink-0 text-center"
+              id="nav-link-home"
+              onClick={() => handleNavClick("home")}
+              className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
             >
-              <User className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap truncate">Login/Signup</span>
+              Home
             </button>
-          )}
+            <button
+              id="nav-link-portfolio"
+              onClick={() => handleNavClick("portfolio")}
+              className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
+            >
+              Services
+            </button>
+            <button
+              id="nav-link-booking"
+              onClick={() => handleNavClick("booking")}
+              className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
+            >
+              Book Design
+            </button>
+            <button
+              id="nav-link-workflow"
+              onClick={() => handleNavClick("workflow")}
+              className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
+            >
+              Workflow
+            </button>
+            <button
+              id="nav-link-inquire"
+              onClick={() => handleNavClick("inquire")}
+              className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
+            >
+              Reviews
+            </button>
+          </nav>
+
+          {/* Right CTA / Auth Status */}
+          <div className="flex items-center gap-3">
+            {currentUser ? (
+              <div className="flex items-center gap-2">
+                <button
+                  id="nav-btn-dashboard"
+                  onClick={() => handleNavClick("portal")}
+                  className="btn-liquid-glass flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-purple-200 cursor-pointer"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span>My Hub</span>
+                </button>
+                <button
+                  id="nav-btn-logout"
+                  onClick={onLogout}
+                  className="hidden md:block px-3 py-1.5 text-xs text-red-300/80 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-300 cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                id="nav-btn-auth"
+                onClick={onOpenAuth}
+                className="btn-liquid-glass flex items-center justify-center gap-1.5 w-[110px] sm:w-auto h-[38px] px-3 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white cursor-pointer shrink-0 text-center"
+              >
+                <User className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap truncate">Login/Signup</span>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      </motion.header>
 
       {/* Left-Sliding Mobile Menu Drawer */}
       <AnimatePresence>
@@ -261,7 +263,7 @@ export default function Navbar({ onNavigate, onOpenAuth, currentUser, onLogout }
           </>
         )}
       </AnimatePresence>
-    </motion.header>
+    </>
   );
 }
 
