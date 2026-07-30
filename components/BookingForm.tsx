@@ -90,7 +90,7 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
     setErrorMessage("");
 
     try {
-      await createBooking({
+      const bookingId = await createBooking({
         userId: currentUser.uid,
         clientName,
         clientEmail,
@@ -98,6 +98,27 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
         bookingDate,
         notes: notes || "No specifications provided."
       });
+
+      // Trigger emails using Resend backend API securely
+      try {
+        await fetch("/api/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: bookingId,
+            clientName,
+            clientEmail,
+            serviceType: selectedService,
+            bookingDate,
+            notes: notes || "No specifications provided."
+          })
+        });
+      } catch (emailErr) {
+        console.error("Failed to send booking notifications:", emailErr);
+      }
+
       setIsSuccess(true);
       setStep(4);
     } catch (error: any) {
