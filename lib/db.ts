@@ -103,7 +103,7 @@ export async function createUserProfile(uid: string, email: string, name: string
     }
     
     // Automatically assign 'admin' role if it's the owner's or admin's email
-    const isAdminEmail = email.toLowerCase() === "rvprasad24d@gmail.com" || email.toLowerCase() === "admin@graphixlab.com";
+    const isAdminEmail = email.toLowerCase() === "graphixlab07@gmail.com" || email.toLowerCase() === "admin@graphixlab.com";
     const role = isAdminEmail ? "admin" : "client";
     
     const profile: UserProfile = {

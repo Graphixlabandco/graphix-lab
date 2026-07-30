@@ -58,7 +58,7 @@ class MockAuth {
   }
 
   async signInWithPassword({ email, password }: any) {
-    const isAdmin = email.toLowerCase() === "rvprasad24d@gmail.com" || email.toLowerCase() === "admin@graphixlab.com";
+    const isAdmin = email.toLowerCase() === "graphixlab07@gmail.com" || email.toLowerCase() === "admin@graphixlab.com";
     const user = {
       id: isAdmin ? "demo_admin_uid" : "usr_" + Math.random().toString(36).substring(2, 11),
       email,

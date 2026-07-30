@@ -29,7 +29,7 @@ export async function POST(request: Request) {
           ${notes ? `<p style="margin: 5px 0;"><strong>Design Brief Notes:</strong> ${notes}</p>` : ''}
         </div>
         
-        <p>You can track the progress of your project inside your <a href="https://graphixlab-lab.vercel.app/#portal" style="color: #a855f7; text-decoration: underline;">Client Hub</a>.</p>
+        <p>You can track the progress of your project inside your <a href="https://graphix-lab.vercel.app/#portal" style="color: #a855f7; text-decoration: underline;">Client Hub</a>.</p>
         <p>If you have any questions, feel free to reply directly to this email.</p>
         <br/>
         <p>Best Regards,<br/><strong>The Graphix Lab Team</strong></p>
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
           ${notes ? `<p style="margin: 5px 0;"><strong>Brief Description:</strong> ${notes}</p>` : ''}
         </div>
         
-        <p>Please log in to the <a href="https://graphixlab-lab.vercel.app/#portal" style="color: #8b5cf6; text-decoration: underline;">Founder Board</a> to approve the timeline or manage the request.</p>
+        <p>Please log in to the <a href="https://graphix-lab.vercel.app/#portal" style="color: #8b5cf6; text-decoration: underline;">Founder Board</a> to approve the timeline or manage the request.</p>
       </div>
     `;
 

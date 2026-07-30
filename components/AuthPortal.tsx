@@ -191,7 +191,7 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
   const handleDemoAccess = (role: "admin" | "client") => {
     const demoUser = role === "admin" ? {
       uid: "demo_admin_uid",
-      email: "rvprasad24d@gmail.com",
+      email: "graphixlab07@gmail.com",
       displayName: "GraphixLab Owner (Demo)",
       role: "admin"
     } : {
@@ -505,7 +505,7 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
           
           <div className="flex items-start gap-2 text-[10px] text-purple-400/50 text-left p-2.5 rounded-xl bg-white/[0.01]">
             <Info className="w-3.5 h-3.5 shrink-0 text-purple-500/50" />
-            <span>Logging in with <b>rvprasad24d@gmail.com</b> automatically grants Graphix Lab Admin Management access.</span>
+            <span>Logging in with <b>graphixlab07@gmail.com</b> automatically grants Graphix Lab Admin Management access.</span>
           </div>
         </div>
       </motion.div>
