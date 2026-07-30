@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "API Key not configured" }, { status: 500 });
     }
 
-    const adminEmail = process.env.ADMIN_EMAIL || "rvprasad24d@gmail.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "graphixlab07@gmail.com";
 
     // 1. Client Confirmation HTML Content
     const clientHtml = `
