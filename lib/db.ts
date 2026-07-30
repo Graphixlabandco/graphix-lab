@@ -94,6 +94,7 @@ export async function createUserProfile(uid: string, email: string, name: string
   try {
     const { data: existingUser, error: fetchError } = await supabase
       .from("users")
+      .select()
       .eq("uid", uid)
       .single();
     
@@ -129,6 +130,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   try {
     const { data, error } = await supabase
       .from("users")
+      .select()
       .eq("uid", uid)
       .single();
     
@@ -166,8 +168,8 @@ export async function getClientBookings(userId: string): Promise<Booking[]> {
   try {
     const { data, error } = await supabase
       .from("bookings")
-      .eq("userId", userId)
-      .select();
+      .select()
+      .eq("userId", userId);
     
     if (error) throw error;
     if (!data) return [];
