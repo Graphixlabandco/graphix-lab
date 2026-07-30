@@ -1,18 +1,27 @@
 import { NextResponse } from 'next/server';
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import nodemailer from 'nodemailer';
 
 export async function POST(request: Request) {
   try {
     const { clientName, clientEmail, serviceType, bookingDate, notes, id } = await request.json();
 
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.warn("RESEND_API_KEY environment variable is not set. Skipping email sending.");
-      return NextResponse.json({ success: false, message: "API Key not configured" }, { status: 500 });
+    const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+    if (!gmailPassword) {
+      console.warn("GMAIL_APP_PASSWORD environment variable is not set. Skipping email sending.");
+      return NextResponse.json({ success: false, message: "Gmail password not configured" }, { status: 500 });
     }
 
-    const adminEmail = process.env.ADMIN_EMAIL || "graphixlab07@gmail.com";
+    const adminEmail = "graphixlab07@gmail.com";
+    const senderEmail = "graphixlab07@gmail.com";
+
+    // Setup Gmail transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: senderEmail,
+        pass: gmailPassword
+      }
+    });
 
     // 1. Client Confirmation HTML Content
     const clientHtml = `
@@ -59,53 +68,22 @@ export async function POST(request: Request) {
     `;
 
     // Send email to client
-    const clientEmailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from: 'Graphix Lab <onboarding@resend.dev>', // Or verified custom domain
-        to: clientEmail,
-        subject: `Graphix Lab | Design Session Booked!`,
-        html: clientHtml,
-      }),
+    await transporter.sendMail({
+      from: `"Graphix Lab" <${senderEmail}>`,
+      to: clientEmail,
+      subject: `Graphix Lab | Design Session Booked!`,
+      html: clientHtml
     });
-
-    console.log("Client email status:", clientEmailRes.status);
-    try {
-      const clientBody = await clientEmailRes.text();
-      console.log("Client email body:", clientBody);
-    } catch (e) {
-      console.error("Could not parse client email response body");
-    }
-
-    // Wait 1.5 seconds to prevent rate limiting or spam filter blocks on simultaneous sends
-    await sleep(1500);
+    console.log("Client confirmation email sent successfully.");
 
     // Send email to admin
-    const adminEmailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from: 'Graphix Lab <onboarding@resend.dev>', // Match exact same display name
-        to: adminEmail,
-        subject: `Graphix Lab | NEW ORDER REQUEST: ${serviceType}`,
-        html: adminHtml,
-      }),
+    await transporter.sendMail({
+      from: `"Graphix Lab" <${senderEmail}>`,
+      to: adminEmail,
+      subject: `Graphix Lab | NEW ORDER REQUEST: ${serviceType}`,
+      html: adminHtml
     });
-
-    console.log("Admin email status:", adminEmailRes.status);
-    try {
-      const adminBody = await adminEmailRes.text();
-      console.log("Admin email body:", adminBody);
-    } catch (e) {
-      console.error("Could not parse admin email response body");
-    }
+    console.log("Admin alert email sent successfully.");
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
