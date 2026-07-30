@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function POST(request: Request) {
   try {
     const { clientName, clientEmail, serviceType, bookingDate, notes, id } = await request.json();
@@ -78,6 +80,9 @@ export async function POST(request: Request) {
     } catch (e) {
       console.error("Could not parse client email response body");
     }
+
+    // Wait 1.5 seconds to prevent rate limiting or spam filter blocks on simultaneous sends
+    await sleep(1500);
 
     // Send email to admin
     const adminEmailRes = await fetch('https://api.resend.com/emails', {
