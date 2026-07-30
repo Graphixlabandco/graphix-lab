@@ -1,0 +1,13 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500' width='500' height='500'>
+  <rect width='500' height='500' fill='#1e1e1e'/>
+  <circle cx='250' cy='250' r='200' fill='#ffffff'/>
+  <g fill='#1e1e1e'>
+    <!-- GL stylized geometric letters -->
+    <path d='M 120 180 C 120 120 220 120 220 180 L 175 180 L 175 220 L 250 220 L 250 310 C 210 330 120 320 120 240 Z M 165 180 C 165 160 205 160 205 180 L 205 200 L 165 200 Z' />
+    <path d='M 260 175 L 305 175 L 305 280 L 390 280 L 390 320 L 260 320 Z' />
+    <!-- Horizontal accent bar above G -->
+    <rect x='110' y='140' width='60' height='8' fill='#1e1e1e' />
+    <!-- Text GRAPHIX LAB -->
+    <text x='250' y='350' font-family='Arial, Helvetica, sans-serif' font-size='22' font-weight='900' letter-spacing='3' text-anchor='middle'>GRAPHIX LAB</text>
+  </g>
+</svg>

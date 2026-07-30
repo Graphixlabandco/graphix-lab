@@ -1,0 +1,6 @@
+{
+  "name": "Graphix Lab",
+  "description": "Premium graphic design agency portfolio and client booking platform with an interactive glassmorphism interface.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
