@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { createUserProfile } from "@/lib/db";
-import { X, Mail, Lock, User, KeyRound, Sparkles, Loader2, Info, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { X, Mail, Lock, User, KeyRound, Sparkles, Loader2, Info, Eye, EyeOff, ArrowLeft, Hash } from "lucide-react";
 
-export type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
+export type AuthMode = 'signin' | 'signup' | 'forgot' | 'verify-otp' | 'reset';
 
 interface AuthPortalProps {
   onClose: () => void;
@@ -17,6 +17,7 @@ interface AuthPortalProps {
 export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' }: AuthPortalProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState<string>("");
+  const [otpCode, setOtpCode] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [name, setName] = useState<string>("");
@@ -38,14 +39,43 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
       }
       setIsSubmitting(true);
       try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/`,
-        });
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
         if (error) throw error;
-        setSuccessMessage("A password reset link has been sent to your email address.");
+        setSuccessMessage("A verification code has been sent to your email.");
+        setTimeout(() => {
+          setMode('verify-otp');
+          setSuccessMessage("");
+        }, 1500);
       } catch (error: any) {
         console.error("Reset password error:", error);
-        setErrorMessage(error.message || "Could not send reset link. Please try again.");
+        setErrorMessage(error.message || "Could not send verification code. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (mode === 'verify-otp') {
+      if (!otpCode) {
+        setErrorMessage("Please enter the verification code.");
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        const { error } = await supabase.auth.verifyOtp({
+          email,
+          token: otpCode.trim(),
+          type: 'recovery'
+        });
+        if (error) throw error;
+        setSuccessMessage("Code verified successfully! Please enter your new password.");
+        setTimeout(() => {
+          setMode('reset');
+          setSuccessMessage("");
+        }, 1500);
+      } catch (error: any) {
+        console.error("OTP verification error:", error);
+        setErrorMessage(error.message || "Invalid or expired verification code. Please check and try again.");
       } finally {
         setIsSubmitting(false);
       }
@@ -69,12 +99,17 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
       try {
         const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
-        setSuccessMessage("Your password has been updated successfully! Swapping back to Log In...");
+        
+        // Log out user from temporary reset session so they must log in manually
+        await supabase.auth.signOut();
+        
+        setSuccessMessage("Password saved successfully! Redirecting to login...");
         setTimeout(() => {
           setMode('signin');
           setSuccessMessage("");
           setPassword("");
           setConfirmPassword("");
+          setOtpCode("");
         }, 2500);
       } catch (error: any) {
         console.error("Update password error:", error);
@@ -173,6 +208,7 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
     switch (mode) {
       case 'signup': return "Create User ID";
       case 'forgot': return "Recover Password";
+      case 'verify-otp': return "Verify OTP Code";
       case 'reset': return "Reset Password";
       default: return "Secure User Portal";
     }
@@ -181,7 +217,8 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
   const getSubtitle = () => {
     switch (mode) {
       case 'signup': return "Register your Graphix Lab account on our secure portal";
-      case 'forgot': return "Enter your email to receive a secure password recovery link";
+      case 'forgot': return "Enter your email to receive a secure verification code";
+      case 'verify-otp': return "Type the 6-digit verification code sent to your inbox";
       case 'reset': return "Enter your new password to regain access to your account";
       default: return "Sign in to access your projects and manage design bookings";
     }
@@ -271,7 +308,7 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
           </AnimatePresence>
 
           {/* Email Field (Sign In, Sign Up, and Forgot modes) */}
-          {mode !== 'reset' && (
+          {(mode === 'signin' || mode === 'signup' || mode === 'forgot') && (
             <div className="space-y-1">
               <label className="text-purple-300 text-[10px] font-bold uppercase tracking-widest block">
                 Email Address
@@ -290,8 +327,28 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
             </div>
           )}
 
+          {/* OTP Code Field (Verify OTP mode only) */}
+          {mode === 'verify-otp' && (
+            <div className="space-y-1">
+              <label className="text-purple-300 text-[10px] font-bold uppercase tracking-widest block">
+                Verification Code
+              </label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter 6-digit OTP code"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-white focus:outline-none focus:border-purple-400 focus:bg-white/[0.04] transition-all duration-300 text-xs tracking-widest text-center font-bold"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Password Field (Sign In, Sign Up, and Reset modes) */}
-          {mode !== 'forgot' && (
+          {(mode === 'signin' || mode === 'signup' || mode === 'reset') && (
             <div className="space-y-1">
               <div className="flex justify-between items-center">
                 <label className="text-purple-300 text-[10px] font-bold uppercase tracking-widest block">
@@ -385,7 +442,8 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
                   <KeyRound className="w-3.5 h-3.5" />
                   <span>
                     {mode === 'signup' && "Generate Account"}
-                    {mode === 'forgot' && "Send Reset Link"}
+                    {mode === 'forgot' && "Send Code"}
+                    {mode === 'verify-otp' && "Verify Code"}
                     {mode === 'reset' && "Update Password"}
                     {mode === 'signin' && "Enter into Graphix Lab"}
                   </span>
@@ -397,7 +455,7 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
 
         {/* Toggle and Info Section */}
         <div className="mt-5 border-t border-white/5 pt-4 text-center space-y-3">
-          {mode === 'forgot' || mode === 'reset' ? (
+          {mode === 'forgot' || mode === 'verify-otp' || mode === 'reset' ? (
             <button
               onClick={() => {
                 setMode('signin');
