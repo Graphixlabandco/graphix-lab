@@ -107,7 +107,7 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen bg-[#0D0B18] text-white overflow-x-hidden selection:bg-purple-500/30 selection:text-purple-200">
+    <main className="relative min-h-screen bg-transparent text-white overflow-x-hidden selection:bg-purple-500/30 selection:text-purple-200">
       {/* Premium 3D cosmic background */}
       <UniverseBackground />
 
