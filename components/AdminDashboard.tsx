@@ -23,8 +23,10 @@ import {
   ShieldAlert,
   Search,
   MessageSquare,
-  FileCheck
+  FileCheck,
+  Paperclip
 } from "lucide-react";
+import { parseNotes } from "@/lib/attachments";
 
 interface AdminDashboardProps {
   currentUser: any;
@@ -264,8 +266,32 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
                         <Calendar className="w-3.5 h-3.5" />
                         <span>Target date: <b className="text-purple-300">{b.bookingDate}</b></span>
                       </div>
-                      <div className="max-w-2xl bg-white/[0.01] p-2.5 rounded-lg border border-white/5 mt-2">
-                        <p className="italic text-purple-200/60 text-[11px]">&quot;{b.notes}&quot;</p>
+                      <div className="max-w-2xl bg-white/[0.01] p-2.5 rounded-lg border border-white/5 mt-2 space-y-2">
+                        {(() => {
+                          const { briefText, attachments } = parseNotes(b.notes);
+                          return (
+                            <>
+                              <p className="italic text-purple-200/60 text-[11px]">&quot;{briefText}&quot;</p>
+                              {attachments.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-white/5">
+                                  {attachments.map((file, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={file.base64}
+                                      download={file.name}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/20 text-[10px] text-purple-300 hover:text-white transition-colors duration-200 cursor-pointer"
+                                      title={`Download ${file.name}`}
+                                    >
+                                      <Paperclip className="w-3 h-3 text-purple-400" />
+                                      <span className="max-w-[150px] truncate font-medium">{file.name}</span>
+                                      <span className="text-[8px] text-purple-400/50">({file.size})</span>
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>

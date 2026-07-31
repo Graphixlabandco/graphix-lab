@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { createBooking } from "@/lib/db";
-import { Sparkles, Calendar, FileText, CheckCircle2, User, Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { formatNotesWithAttachments, Attachment } from "@/lib/attachments";
+import { Sparkles, Calendar, FileText, CheckCircle2, User, Mail, ArrowRight, ArrowLeft, Loader2, Paperclip, Trash2, Image as ImageIcon, Film, File } from "lucide-react";
 
 interface BookingFormProps {
   currentUser: any;
@@ -55,6 +56,8 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
   const [selectedService, setSelectedService] = useState<string>("Logo/Brand Identity");
   const [bookingDate, setBookingDate] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const defaultName = currentUser ? (currentUser.displayName || currentUser.name || "") : "";
   const defaultEmail = currentUser ? (currentUser.email || "") : "";
 
@@ -66,6 +69,65 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>( "");
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    setIsUploading(true);
+    const files = Array.from(e.target.files);
+    
+    const newAttachments: Attachment[] = [];
+    
+    for (const file of files) {
+      if (file.size > 4 * 1024 * 1024) {
+        alert(`File ${file.name} is too large. Max size is 4MB.`);
+        continue;
+      }
+      
+      try {
+        const base64 = await convertToBase64(file);
+        const sizeStr = formatFileSize(file.size);
+        newAttachments.push({
+          name: file.name,
+          size: sizeStr,
+          type: file.type,
+          base64: base64
+        });
+      } catch (err) {
+        console.error("Failed to read file:", file.name, err);
+      }
+    }
+    
+    setAttachments(prev => [...prev, ...newAttachments]);
+    setIsUploading(false);
+    e.target.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type.startsWith("image/")) return <ImageIcon className="w-4 h-4 text-purple-400 shrink-0" />;
+    if (type.startsWith("video/")) return <Film className="w-4 h-4 text-purple-400 shrink-0" />;
+    return <File className="w-4 h-4 text-purple-400 shrink-0" />;
+  };
 
   const handleNextStep = () => {
     if (step === 1 && !selectedService) {
@@ -102,13 +164,18 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
     setErrorMessage("");
 
     try {
+      const finalNotes = formatNotesWithAttachments(
+        notes || "No specifications provided.",
+        attachments
+      );
+
       const bookingId = await createBooking({
         userId: currentUser.uid,
         clientName,
         clientEmail,
         serviceType: selectedService,
         bookingDate,
-        notes: notes || "No specifications provided."
+        notes: finalNotes
       });
 
       // Trigger emails using Resend backend API securely
@@ -124,7 +191,7 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
             clientEmail,
             serviceType: selectedService,
             bookingDate,
-            notes: notes || "No specifications provided."
+            notes: finalNotes
           })
         });
       } catch (emailErr) {
@@ -272,6 +339,52 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
                       rows={5}
                       className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/[0.02] border border-white/10 text-white focus:outline-none focus:border-purple-400 focus:bg-white/[0.04] transition-all duration-300 text-sm resize-none"
                     />
+                  </div>
+                </div>
+
+                {/* File Upload / Media Files */}
+                <div className="space-y-2">
+                  <label className="text-purple-300 text-xs font-bold uppercase tracking-widest block">
+                    Reference Media Files (Optional)
+                  </label>
+                  <div className="flex flex-col gap-3">
+                    <label className="flex items-center gap-2 px-4 py-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-dashed border-white/10 hover:border-purple-400/40 text-purple-200 hover:text-white text-xs font-bold transition-all duration-300 cursor-pointer w-full justify-center">
+                      <Paperclip className="w-4 h-4 text-purple-400" />
+                      <span>{isUploading ? "Reading Files..." : "Add Media Files (Images, Videos, PDFs...)"}</span>
+                      <input
+                        type="file"
+                        multiple
+                        onChange={handleFileChange}
+                        accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        className="hidden"
+                        disabled={isUploading}
+                      />
+                    </label>
+                    
+                    {attachments.length > 0 && (
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        {attachments.map((file, index) => (
+                          <div 
+                            key={index}
+                            className="flex items-center justify-between p-2.5 rounded-xl bg-purple-950/20 border border-purple-500/10 text-xs text-purple-200/90"
+                          >
+                            <div className="flex items-center gap-2.5 truncate max-w-[80%]">
+                              {getFileIcon(file.type)}
+                              <span className="truncate font-semibold">{file.name}</span>
+                              <span className="text-[10px] text-purple-400/60 font-medium">({file.size})</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeAttachment(index)}
+                              className="p-1 rounded-md bg-white/5 hover:bg-red-500/20 text-purple-400 hover:text-red-300 transition-colors duration-300 cursor-pointer"
+                              aria-label="Remove attachment"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

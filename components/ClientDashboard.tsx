@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { getClientBookings, Booking } from "@/lib/db";
-import { Calendar, Layers, Clock, AlertCircle, Plus, RefreshCw, LogOut, CheckCircle, Flame } from "lucide-react";
+import { parseNotes } from "@/lib/attachments";
+import { Calendar, Layers, Clock, AlertCircle, Plus, RefreshCw, LogOut, CheckCircle, Flame, Paperclip } from "lucide-react";
 
 interface ClientDashboardProps {
   currentUser: any;
@@ -153,9 +154,35 @@ export default function ClientDashboard({ currentUser, onLogout, onNavigateToBoo
                       <Calendar className="w-3.5 h-3.5 text-purple-400" />
                       <span>Target Delivery: <b className="text-purple-200">{booking.bookingDate}</b></span>
                     </div>
-                    <div className="flex items-start gap-1.5 max-w-xl">
-                      <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">Project Brief: <i className="text-purple-300/80">&quot;{booking.notes}&quot;</i></span>
+                    <div className="flex flex-col gap-1.5 max-w-xl">
+                      <div className="flex items-start gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                        {(() => {
+                          const { briefText, attachments } = parseNotes(booking.notes);
+                          return (
+                            <div className="space-y-1.5">
+                              <span className="line-clamp-2">Project Brief: <i className="text-purple-300/80">&quot;{briefText}&quot;</i></span>
+                              {attachments.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                                  {attachments.map((file, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={file.base64}
+                                      download={file.name}
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-950/30 hover:bg-purple-900/40 border border-purple-500/15 text-[9px] text-purple-300 hover:text-white transition-colors duration-200 cursor-pointer"
+                                      title={`Download ${file.name}`}
+                                    >
+                                      <Paperclip className="w-2.5 h-2.5 text-purple-400" />
+                                      <span className="max-w-[120px] truncate font-medium">{file.name}</span>
+                                      <span className="text-[8px] text-purple-400/50">({file.size})</span>
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>

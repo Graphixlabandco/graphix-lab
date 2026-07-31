@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { parseNotes } from '@/lib/attachments';
 
 export async function POST(request: Request) {
   try {
     const { clientName, clientEmail, serviceType, bookingDate, notes, id } = await request.json();
+
+    const { briefText, attachments } = parseNotes(notes);
 
     const gmailPassword = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPassword) {
@@ -35,7 +38,13 @@ export async function POST(request: Request) {
           <p style="margin: 5px 0;"><strong>Booking ID:</strong> ${id || 'Pending'}</p>
           <p style="margin: 5px 0;"><strong>Service Chosen:</strong> ${serviceType}</p>
           <p style="margin: 5px 0;"><strong>Target Date:</strong> ${bookingDate}</p>
-          ${notes ? `<p style="margin: 5px 0;"><strong>Design Brief Notes:</strong> ${notes}</p>` : ''}
+          ${briefText ? `<p style="margin: 5px 0;"><strong>Design Brief Notes:</strong> ${briefText}</p>` : ''}
+          ${attachments.length > 0 ? `
+            <p style="margin: 10px 0 5px 0;"><strong>Attached Reference Media:</strong></p>
+            <ul style="margin: 0; padding-left: 20px; color: #a855f7; font-size: 13px;">
+              ${attachments.map(file => `<li>${file.name} (${file.size})</li>`).join('')}
+            </ul>
+          ` : ''}
         </div>
         
         <p>You can track the progress of your project inside your <a href="https://graphix-lab.vercel.app/#portal" style="color: #a855f7; text-decoration: underline;">Client Hub</a>.</p>
@@ -60,19 +69,36 @@ export async function POST(request: Request) {
           <p style="margin: 5px 0;"><strong>Booking ID:</strong> ${id || 'Pending'}</p>
           <p style="margin: 5px 0;"><strong>Service Type:</strong> ${serviceType}</p>
           <p style="margin: 5px 0;"><strong>Target Date:</strong> ${bookingDate}</p>
-          ${notes ? `<p style="margin: 5px 0;"><strong>Brief Description:</strong> ${notes}</p>` : ''}
+          ${briefText ? `<p style="margin: 5px 0;"><strong>Brief Description:</strong> ${briefText}</p>` : ''}
+          ${attachments.length > 0 ? `
+            <p style="margin: 10px 0 5px 0;"><strong>Attached Reference Media:</strong></p>
+            <ul style="margin: 0; padding-left: 20px; color: #8b5cf6; font-size: 13px;">
+              ${attachments.map(file => `<li>${file.name} (${file.size})</li>`).join('')}
+            </ul>
+          ` : ''}
         </div>
         
         <p>Please log in to the <a href="https://graphix-lab.vercel.app/#portal" style="color: #8b5cf6; text-decoration: underline;">Founder Board</a> to approve the timeline or manage the request.</p>
       </div>
     `;
 
+    // Format email attachments for Nodemailer
+    const emailAttachments = attachments.map(file => {
+      const base64Data = file.base64.split(',')[1] || file.base64;
+      return {
+        filename: file.name,
+        content: base64Data,
+        encoding: 'base64'
+      };
+    });
+
     // Send email to client
     await transporter.sendMail({
       from: `"Graphix Lab" <${senderEmail}>`,
       to: clientEmail,
       subject: `Graphix Lab | Design Session Booked!`,
-      html: clientHtml
+      html: clientHtml,
+      attachments: emailAttachments
     });
     console.log("Client confirmation email sent successfully.");
 
@@ -81,7 +107,8 @@ export async function POST(request: Request) {
       from: `"Graphix Lab" <${senderEmail}>`,
       to: adminEmail,
       subject: `Graphix Lab | NEW ORDER REQUEST: ${serviceType}`,
-      html: adminHtml
+      html: adminHtml,
+      attachments: emailAttachments
     });
     console.log("Admin alert email sent successfully.");
 
