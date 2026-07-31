@@ -76,6 +76,7 @@ export interface ClientRequest {
   userName: string;
   projectDescription: string;
   email: string;
+  status?: "pending" | "approved" | "cancelled";
   createdAt: string;
 }
 
@@ -352,5 +353,63 @@ export async function deleteServicePortfolioImage(imageId: string): Promise<void
   } catch (error) {
     console.error("Failed to delete service portfolio image from Supabase:", error);
     throw error;
+  }
+}
+
+// Fetch all client customized requests (ideas)
+export async function getAllClientRequests(): Promise<ClientRequest[]> {
+  try {
+    const { data, error } = await supabase
+      .from("client_requests")
+      .select();
+    
+    if (error) throw error;
+    if (!data) return [];
+    
+    return (data as ClientRequest[]).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  } catch (error) {
+    handleSupabaseError(error, OperationType.LIST, "client_requests");
+  }
+}
+
+// Update client request approval/cancel status
+export async function updateClientRequestStatus(id: string, status: "pending" | "approved" | "cancelled"): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("client_requests")
+      .update({ status })
+      .eq("id", id);
+    
+    if (error) throw error;
+  } catch (error) {
+    handleSupabaseError(error, OperationType.UPDATE, "client_requests");
+  }
+}
+
+// Delete client request completely
+export async function deleteClientRequest(id: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("client_requests")
+      .delete()
+      .eq("id", id);
+    
+    if (error) throw error;
+  } catch (error) {
+    handleSupabaseError(error, OperationType.DELETE, "client_requests");
+  }
+}
+
+// Delete testimonial (review) completely
+export async function deleteTestimonial(id: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("testimonials")
+      .delete()
+      .eq("id", id);
+    
+    if (error) throw error;
+  } catch (error) {
+    handleSupabaseError(error, OperationType.DELETE, "testimonials");
   }
 }
