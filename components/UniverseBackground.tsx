@@ -45,9 +45,9 @@ export default function UniverseBackground() {
         y: Math.random() * height - height / 2,
         z: Math.random() * depth,
         color: i % 8 === 0 
-          ? "rgba(13, 0, 164, 0.85)" // Navy Electric (#0D00A4)
+          ? "rgba(126, 82, 160, 0.85)" // Deep Lilac (#7E52A0)
           : i % 12 === 0 
-            ? "rgba(143, 148, 251, 0.85)" // Light Periwinkle (#8F94FB)
+            ? "rgba(230, 188, 205, 0.85)" // Pastel Petal (#E6BCCD)
             : "rgba(255, 255, 255, 0.9)", // White stars
         size: Math.random() * 1.5 + 0.5,
       });
@@ -61,7 +61,7 @@ export default function UniverseBackground() {
         vx: 0.15,
         vy: 0.1,
         radius: Math.min(width, height) * 0.45,
-        color: "rgba(4, 5, 46, 0.08)", // Prussian Blue (#04052E)
+        color: "rgba(41, 39, 76, 0.08)", // Space Indigo (#29274C)
       },
       {
         x: width * 0.75,
@@ -69,7 +69,7 @@ export default function UniverseBackground() {
         vx: -0.1,
         vy: -0.12,
         radius: Math.min(width, height) * 0.5,
-        color: "rgba(20, 1, 82, 0.06)", // Deep Twilight (#140152)
+        color: "rgba(126, 82, 160, 0.06)", // Deep Lilac (#7E52A0)
       },
       {
         x: width * 0.5,
@@ -77,7 +77,7 @@ export default function UniverseBackground() {
         vx: 0.05,
         vy: -0.08,
         radius: Math.min(width, height) * 0.4,
-        color: "rgba(34, 0, 124, 0.06)", // Navy (#22007C)
+        color: "rgba(210, 149, 191, 0.06)", // Lilac (#D295BF)
       },
     ];
 
@@ -106,9 +106,9 @@ export default function UniverseBackground() {
         speed: (0.001 + (300 - distance) * 0.00002) * 0.6,
         size: Math.random() * 1.8 + 0.4,
         color: i % 4 === 0 
-          ? "rgba(13, 0, 164, 0.6)" // Navy Electric spiral dust (#0D00A4)
+          ? "rgba(126, 82, 160, 0.6)" // Deep Lilac spiral dust (#7E52A0)
           : i % 3 === 0 
-            ? "rgba(143, 148, 251, 0.5)" // Light Periwinkle spiral dust (#8F94FB)
+            ? "rgba(230, 188, 205, 0.5)" // Pastel Petal spiral dust (#E6BCCD)
             : "rgba(255, 255, 255, 0.6)",
       });
     }
@@ -128,7 +128,7 @@ export default function UniverseBackground() {
     // Loop renderer
     const tick = () => {
       // Very deep rich dark workspace background with absolute opacity control
-      ctx.fillStyle = "rgba(2, 1, 10, 1)";
+      ctx.fillStyle = "rgba(1, 42, 54, 1)";
       ctx.fillRect(0, 0, width, height);
 
       // 1. Draw Nebulae dust clouds
@@ -217,7 +217,7 @@ export default function UniverseBackground() {
     <canvas
        ref={canvasRef}
        id="universe-background-canvas"
-       className="fixed inset-0 w-full h-full z-[-20] pointer-events-none bg-[#02010A]"
+       className="fixed inset-0 w-full h-full z-[-20] pointer-events-none bg-[#012A36]"
        style={{ mixBlendMode: "normal" }}
     />
   );
