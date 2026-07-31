@@ -164,6 +164,9 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
         
         // Save profile in Database
         const profile = await createUserProfile(data.user.id, email, name);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("just_signed_up", "true");
+        }
         onSuccess({
           uid: data.user.id,
           email: data.user.email,

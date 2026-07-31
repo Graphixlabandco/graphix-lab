@@ -26,6 +26,10 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState<string>("hero");
   const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
 
+  // Greeting Toast Notification States
+  const isInitialAuthCheck = useRef(true);
+  const [welcomeToast, setWelcomeToast] = useState<{ message: string; visible: boolean } | null>(null);
+
   // References for scrolling
   const heroRef = useRef<HTMLDivElement | null>(null);
   const portfolioRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +52,9 @@ export default function Home() {
         // Fetch detailed profile for roles (admin vs client)
         try {
           let profile = await getUserProfile(user.id);
+          let isNewUser = false;
           if (!profile) {
+            isNewUser = true;
             // Automatically provision a client profile for OAuth sign-in users
             const displayName = user.user_metadata?.name || user.email?.split("@")[0];
             profile = await createUserProfile(user.id, user.email!, displayName);
@@ -60,6 +66,27 @@ export default function Home() {
             displayName: user.user_metadata?.name || user.email?.split("@")[0],
             role: profile?.role || "client"
           });
+
+          // Trigger floating toast message on explicit user logins / signups
+          if (!isInitialAuthCheck.current) {
+            const justSignedUp = typeof window !== "undefined" && sessionStorage.getItem("just_signed_up") === "true";
+            if (justSignedUp) {
+              sessionStorage.removeItem("just_signed_up");
+              isNewUser = true;
+            }
+
+            const displayName = user.user_metadata?.name || user.email?.split("@")[0];
+            const message = isNewUser
+              ? `Hello ${displayName}, welcome to Graphix Lab`
+              : `Hello ${displayName}, welcome back to Graphix Lab`;
+
+            setWelcomeToast({ message, visible: true });
+
+            // Auto-hide the welcome message after 5 seconds
+            setTimeout(() => {
+              setWelcomeToast(prev => prev ? { ...prev, visible: false } : null);
+            }, 5000);
+          }
         } catch (error) {
           console.error("Error loading or provisioning user profile:", error);
           setCurrentUser({
@@ -70,11 +97,13 @@ export default function Home() {
           });
         } finally {
           setIsLoadingAuth(false);
+          isInitialAuthCheck.current = false;
         }
       } else {
         setCurrentUser(null);
         setUserProfile(null);
         setIsLoadingAuth(false);
+        isInitialAuthCheck.current = false;
       }
     });
 
@@ -267,6 +296,30 @@ export default function Home() {
 
       {/* Floating AI Chatbot Widget */}
       <RiyaChatbot />
+
+      {/* Floating Greeting Welcome Toast */}
+      <AnimatePresence>
+        {welcomeToast && welcomeToast.visible && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            className="fixed top-24 right-6 z-[9999] flex items-center gap-3.5 px-5 py-4 rounded-2xl bg-black/45 backdrop-blur-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-purple-500/20 max-w-sm"
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.15)] shrink-0">
+              <Sparkles className="w-4 h-4 text-purple-300 animate-pulse" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-xs font-semibold leading-snug">
+                {welcomeToast.message}
+              </p>
+              <p className="text-[10px] text-purple-300/50 font-bold uppercase tracking-widest mt-0.5">
+                Session Active
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
