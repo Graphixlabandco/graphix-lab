@@ -1,32 +1,32 @@
 @import "tailwindcss";
 
 body {
-  background-color: #0A0813;
+  background-color: #02010A;
   color: #ffffff;
 }
 
 @theme {
-  /* Premium Pure Purple/Violet Theme Mapped to the Saturated Cosmic Spectrum */
-  --color-obsidian-violet: #0A0813;     /* Deep Space Dark Violet Background */
-  --color-slate-blue: #8B5CF6;          /* Primary Accent: Vibrant Purple/Violet */
-  --color-soft-periwinkle: #A855F7;     /* Secondary Accent: Bright Purple */
-  --color-wisteria-lavender: #C084FC;   /* Text & Subtle Borders: Light Purple */
-  --color-powder-petal: #E9D5FF;        /* Highlights: Soft Lavender */
+  /* Dynamic Deep Space Dark-Blue / Navy Electric Palette */
+  --color-obsidian-violet: #02010A;     /* Shadow Black Main Background */
+  --color-slate-blue: #0D00A4;          /* Primary Accent: Navy Electric */
+  --color-soft-periwinkle: #22007C;     /* Secondary Accent: Navy */
+  --color-wisteria-lavender: #8F94FB;   /* Text & Highlight Accent: Light Periwinkle */
+  --color-powder-petal: #A5B4FC;        /* Top Highlights: Soft Lavender Blue */
 
-  /* Cyber overrides mapped to the deep purple space spectrum */
-  --color-cyber-50: #fbf9ff;
-  --color-cyber-100: #f5eeff;
-  --color-cyber-200: #e9d5ff;
-  --color-cyber-300: #d8b4fe;     /* Soft Lavender */
-  --color-cyber-400: #c084fc;     /* Wisteria Lavender */
-  --color-cyber-500: #8b5cf6;     /* Primary: Vibrant Purple */
-  --color-cyber-600: #a855f7;     /* Secondary: Bright Purple */
-  --color-cyber-700: #120e25;     /* Card Dark Background */
-  --color-cyber-800: #080612;     /* Deepest Space Background */
-  --color-cyber-900: #0a0813;     /* Obsidian Violet */
-  --color-cyber-950: #04030a;     /* Deepest Void */
+  /* Cyber overrides mapped to the deep blue space spectrum */
+  --color-cyber-50: #eef2ff;
+  --color-cyber-100: #e0e7ff;
+  --color-cyber-200: #c7d2fe;
+  --color-cyber-300: #a5b4fc;     /* Soft Indigo */
+  --color-cyber-400: #818cf8;     /* Light Periwinkle */
+  --color-cyber-500: #0D00A4;     /* Primary: Navy Electric */
+  --color-cyber-600: #22007C;     /* Secondary: Navy */
+  --color-cyber-700: #04052E;     /* Prussian Blue (Inky Card BG) */
+  --color-cyber-800: #02010A;     /* Shadow Black */
+  --color-cyber-900: #02010A;     /* Shadow Black */
+  --color-cyber-950: #000003;     /* Deep Void */
 
-  /* Map standard purple and indigo classes to the premium purple theme */
+  /* Map standard purple and indigo classes to the new space palette */
   --color-purple-50: var(--color-cyber-50);
   --color-purple-100: var(--color-cyber-100);
   --color-purple-200: var(--color-cyber-200);
@@ -51,17 +51,17 @@ body {
   --color-indigo-900: var(--color-cyber-900);
   --color-indigo-950: var(--color-cyber-950);
 
-  /* Set dark-mode base tones to deep dark purple background to harmonize perfectly */
-  --color-zinc-900: #120e25;
-  --color-zinc-950: #0a0813;
+  /* Set dark-mode base tones to deep dark space blue background to harmonize perfectly */
+  --color-zinc-900: #04052E;
+  --color-zinc-950: #02010A;
 }
 
-/* Saturated Solid "Liquid Glass" CTA Button - Matching screenshot exactly */
+/* Saturated Solid "Liquid Glass" CTA Button - Matching new palette */
 .btn-liquid-glass {
-  background: #8b5cf6; /* Saturated vibrant purple */
+  background: #0D00A4; /* Solid Navy Electric */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 4px 14px rgba(13, 0, 164, 0.35);
   transition: all 0.25s ease-in-out;
   display: inline-flex;
   align-items: center;
@@ -69,9 +69,9 @@ body {
 }
 
 .btn-liquid-glass:hover {
-  background: #7c3aed; /* Saturated deep violet */
+  background: #190cd2; /* Brighter electric blue on hover so it pops */
   transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 6px 18px rgba(25, 12, 210, 0.5);
 }
 
 .btn-liquid-glass:active {
@@ -81,7 +81,7 @@ body {
 /* Secondary CTA (Darker frosted glass with subtle stroke) */
 .btn-liquid-glass-secondary {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(13, 0, 164, 0.2);
   border-radius: 9999px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -90,12 +90,12 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #c084fc;
+  color: #a5b4fc;
 }
 
 .btn-liquid-glass-secondary:hover {
-  background: rgba(139, 92, 246, 0.08);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(13, 0, 164, 0.08);
+  border: 1px solid rgba(13, 0, 164, 0.3);
   color: #ffffff;
   transform: translateY(-1.5px);
 }
@@ -104,9 +104,9 @@ body {
   transform: translateY(1px);
 }
 
-/* Pure purple/lavender/indigo text gradient */
+/* Space dark-blue/electric-blue/indigo text gradient */
 .text-gradient-neon {
-  background: linear-gradient(90deg, #a855f7 0%, #c084fc 40%, #e9d5ff 70%, #818cf8 100%);
+  background: linear-gradient(90deg, #8f94fb 0%, #a5b4fc 40%, #e0e7ff 70%, #818cf8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

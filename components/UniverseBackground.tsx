@@ -45,9 +45,9 @@ export default function UniverseBackground() {
         y: Math.random() * height - height / 2,
         z: Math.random() * depth,
         color: i % 8 === 0 
-          ? "rgba(138, 43, 226, 0.85)" // Laser Purple (#8A2BE2)
+          ? "rgba(13, 0, 164, 0.85)" // Navy Electric (#0D00A4)
           : i % 12 === 0 
-            ? "rgba(168, 85, 247, 0.85)" // Soft Purple (#A855F7)
+            ? "rgba(143, 148, 251, 0.85)" // Light Periwinkle (#8F94FB)
             : "rgba(255, 255, 255, 0.9)", // White stars
         size: Math.random() * 1.5 + 0.5,
       });
@@ -61,7 +61,7 @@ export default function UniverseBackground() {
         vx: 0.15,
         vy: 0.1,
         radius: Math.min(width, height) * 0.45,
-        color: "rgba(138, 43, 226, 0.05)", // Laser Purple (#8A2BE2)
+        color: "rgba(4, 5, 46, 0.08)", // Prussian Blue (#04052E)
       },
       {
         x: width * 0.75,
@@ -69,7 +69,7 @@ export default function UniverseBackground() {
         vx: -0.1,
         vy: -0.12,
         radius: Math.min(width, height) * 0.5,
-        color: "rgba(99, 102, 241, 0.04)", // Soft Indigo (#6366F1)
+        color: "rgba(20, 1, 82, 0.06)", // Deep Twilight (#140152)
       },
       {
         x: width * 0.5,
@@ -77,7 +77,7 @@ export default function UniverseBackground() {
         vx: 0.05,
         vy: -0.08,
         radius: Math.min(width, height) * 0.4,
-        color: "rgba(168, 85, 247, 0.04)", // Soft Purple (#A855F7)
+        color: "rgba(34, 0, 124, 0.06)", // Navy (#22007C)
       },
     ];
 
@@ -106,9 +106,9 @@ export default function UniverseBackground() {
         speed: (0.001 + (300 - distance) * 0.00002) * 0.6,
         size: Math.random() * 1.8 + 0.4,
         color: i % 4 === 0 
-          ? "rgba(138, 43, 226, 0.6)" // Laser Purple spiral dust (#8A2BE2)
+          ? "rgba(13, 0, 164, 0.6)" // Navy Electric spiral dust (#0D00A4)
           : i % 3 === 0 
-            ? "rgba(168, 85, 247, 0.5)" // Soft Purple spiral dust (#A855F7)
+            ? "rgba(143, 148, 251, 0.5)" // Light Periwinkle spiral dust (#8F94FB)
             : "rgba(255, 255, 255, 0.6)",
       });
     }
@@ -128,7 +128,7 @@ export default function UniverseBackground() {
     // Loop renderer
     const tick = () => {
       // Very deep rich dark workspace background with absolute opacity control
-      ctx.fillStyle = "rgba(10, 8, 19, 1)";
+      ctx.fillStyle = "rgba(2, 1, 10, 1)";
       ctx.fillRect(0, 0, width, height);
 
       // 1. Draw Nebulae dust clouds
@@ -217,7 +217,7 @@ export default function UniverseBackground() {
     <canvas
        ref={canvasRef}
        id="universe-background-canvas"
-       className="fixed inset-0 w-full h-full z-[-20] pointer-events-none bg-[#0A0813]"
+       className="fixed inset-0 w-full h-full z-[-20] pointer-events-none bg-[#02010A]"
        style={{ mixBlendMode: "normal" }}
     />
   );
