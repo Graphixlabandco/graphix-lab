@@ -96,6 +96,34 @@ const blueprintServices: ServiceBlueprint[] = [
       "Color Grading & Final Delivery Formats"
     ],
     recommendation: "Phase 5 Master: Finalizing cinematic cuts, audio spatial mastering, and broadcast-ready delivery."
+  },
+  {
+    id: "vibe-coding",
+    icon: Flame,
+    title: "Vibe Coding & AI Orchestration",
+    subtitle: "Prompt engineering, flow-state dev, & fast software cycles",
+    badge: "SERVICE 06 | VIBE CODING",
+    description: "Orchestrating AI agents and code generators to build software prototypes at lighting speed. We turn complex program logic, database schema requests, and UI/UX drafts into operational web solutions.",
+    deliverables: [
+      "AI Prompt Architecture & Orchestration",
+      "High-Speed Component & Feature Builds",
+      "API Integration & Interactive Prototypes"
+    ],
+    recommendation: "Phase 6 Velocity: Accelerating software development cycles via agentic AI coding methodologies."
+  },
+  {
+    id: "customised",
+    icon: Sparkles,
+    title: "Customised Visual & Code Services",
+    subtitle: "Ad-hoc creative solutions, tailored specs, & bespoke digital assets",
+    badge: "SERVICE 07 | CUSTOMISED",
+    description: "Translating hyper-specific project ideas into reality. Whether it is custom physics simulations, experimental interactive canvas pages, or complex multi-medium graphics projects.",
+    deliverables: [
+      "Bespoke Visual Asset Deliverables",
+      "Custom UI/UX Prototypes & Code Integrations",
+      "Tailored Design consultations & Production Specs"
+    ],
+    recommendation: "Phase 7 Bespoke: Solving unique design-to-code challenges with fully custom visual workflows."
   }
 ];
 

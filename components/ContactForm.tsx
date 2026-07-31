@@ -86,6 +86,7 @@ export default function ContactForm() {
     "UI/UX Design",
     "3D Illustrations",
     "Animations/Video Editing",
+    "Vibe Coding",
     "Customised Service"
   ];
 

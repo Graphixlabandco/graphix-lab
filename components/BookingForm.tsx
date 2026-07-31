@@ -35,6 +35,18 @@ const services = [
     name: "Animations/Video Editing",
     description: "Video brand reveals, promotional clips, physics-based plasma/particle simulation animations.",
     badge: "Trending"
+  },
+  {
+    id: "vibecoding",
+    name: "Vibe Coding",
+    description: "AI-assisted rapid flow-state coding, prompt-based feature design, and high-performance software builds.",
+    badge: "Next-Gen"
+  },
+  {
+    id: "custom",
+    name: "Customised Service",
+    description: "Work directly with us to build your custom idea, design specs, or complex digital product requirements.",
+    badge: "Tailored"
   }
 ];
 

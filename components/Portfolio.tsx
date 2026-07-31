@@ -40,7 +40,7 @@ const portfolioItems: PortfolioItem[] = [
   {
     id: "service-4",
     title: "Intelligent Code",
-    category: "Customised Service",
+    category: "Vibe Coding",
     serviceTitle: "vibe coding",
     description: "Leveraging advanced AI orchestration and rapid flow-state development to transform raw ideas into production ready. software at lighting speed",
     image: "https://cdn.postimage.me/2026/07/30/1000072109.png"
@@ -65,6 +65,7 @@ export default function Portfolio() {
     "UI/UX Design",
     "3D Illustrations",
     "Animations/Video Editing",
+    "Vibe Coding",
     "Customised Service"
   ];
 
