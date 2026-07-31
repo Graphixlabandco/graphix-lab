@@ -60,61 +60,80 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       });
     }
 
-    // Try stable v1 endpoint first, fall back to v1beta, then try gemini-2.5-flash
-    const endpoints = [
-      {
-        url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        body: { 
-          contents,
-          systemInstruction: { parts: [{ text: systemPrompt }] }
-        }
-      },
-      {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        body: { 
-          contents,
-          systemInstruction: { parts: [{ text: systemPrompt }] }
-        }
-      },
-      {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-        body: { 
-          contents,
-          systemInstruction: { parts: [{ text: systemPrompt }] }
-        }
-      }
-    ];
-
-    let lastError = null;
-    let responseData = null;
-
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(endpoint.url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(endpoint.body)
-        });
+    // 1. Dynamically query Google's Model list to find the exact available Gemini model for this API key
+    let modelName = "";
+    try {
+      const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+      const listRes = await fetch(listUrl);
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        const availableModels = listData.models || [];
         
-        if (response.ok) {
-          responseData = await response.json();
-          break; // Succeeded!
-        } else {
-          const errText = await response.text();
-          lastError = new Error(`Status ${response.status} from model endpoint: ${errText}`);
+        // Find first active gemini model that supports generateContent
+        const targetModel = availableModels.find((m: any) => 
+          m.name && 
+          m.name.includes("gemini") && 
+          m.supportedGenerationMethods?.includes("generateContent") &&
+          !m.name.includes("gemini-2.5-flash") // Skip deprecated models if listed
+        );
+        
+        if (targetModel) {
+          modelName = targetModel.name;
+          console.log(`Discovered active model on API key: ${modelName}`);
         }
-      } catch (err: any) {
-        lastError = err;
       }
+    } catch (err) {
+      console.warn("Could not fetch model list, attempting fallback model names.", err);
     }
 
-    if (!responseData) {
-      throw lastError || new Error("Failed to connect to any Gemini API model endpoint");
+    // Default fallbacks if model listing is restricted or fails
+    if (!modelName) {
+      modelName = "models/gemini-1.5-flash-latest"; // or "models/gemini-1.5-flash"
     }
 
-    const reply = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
+    // 2. Call the dynamically discovered model endpoint
+    const generateUrl = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
+    const response = await fetch(generateUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        contents,
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      // Try one last hardcoded stable v1 fallback to models/gemini-1.5-flash-latest
+      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+      const fallbackRes = await fetch(fallbackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        })
+      });
+      
+      if (fallbackRes.ok) {
+        const fallbackData = await fallbackRes.json();
+        const reply = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (reply) {
+          return NextResponse.json({ reply });
+        }
+      }
+      
+      throw new Error(`Gemini API returned status ${response.status} for ${modelName}: ${errText}`);
+    }
+
+    const data = await response.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!reply) {
-      throw new Error("Empty text reply candidates from Gemini API");
+      throw new Error(`Empty text reply candidates from Gemini API using ${modelName}`);
     }
 
     return NextResponse.json({ reply });
