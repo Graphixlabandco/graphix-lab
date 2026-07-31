@@ -27,7 +27,7 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
 
   try {
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY environment variable is not defined");
+      throw new Error("GEMINI_API_KEY environment variable is not defined on Vercel");
     }
 
     // Build alternating message history for Gemini API
@@ -91,11 +91,15 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
   } catch (error: any) {
     console.error("Gemini call failed, executing smart assistant responder:", error);
     
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
     // Highly comprehensive fallback responder representing Riya
     const msgLower = message.toLowerCase();
-    let reply = "I am here to assist you with any questions! As Riya, the Graphix Lab assistant, I can guide you through our services (branding, UI/UX, 3D animations, vibe coding), explain how to sign up, or how to submit custom requests.";
+    let reply = "I am here to assist you with any questions! As Riya, the Graphix Lab assistant, I can guide you through our services (branding, UI/UX, 3D animations, vibe coding), explain how to sign up, how to reset passwords, or how to submit custom requests.";
 
-    if (msgLower.includes("sign up") || msgLower.includes("signup") || msgLower.includes("register") || msgLower.includes("create account")) {
+    if (msgLower.includes("password") || msgLower.includes("reset") || msgLower.includes("forgot")) {
+      reply = "If you forgot your password or need to reset it: click 'My Hub' at the top right, click 'Forgot Password?' inside the sign-in form, enter your registered email to request a 6-digit OTP code, verify the code, and then enter your new password. This will securely update your access!";
+    } else if (msgLower.includes("sign up") || msgLower.includes("signup") || msgLower.includes("register") || msgLower.includes("create account")) {
       reply = "To sign up, click on the 'My Hub' button in the top right corner of the navigation bar, choose 'Create Account', enter your email, password, and full name, and submit. You can then access your personal dashboard!";
     } else if (msgLower.includes("login") || msgLower.includes("signin") || msgLower.includes("sign in") || msgLower.includes("my hub")) {
       reply = "You can sign in by clicking 'My Hub' at the top right, entering your email and password, and clicking 'Sign In'. If you forgot your password, there is an OTP password recovery option available right inside the form.";
@@ -123,6 +127,9 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       reply = "Our project pricing depends on your requirements. You can customize your project budget when submitting a booking request or customized service idea!";
     }
     
-    return NextResponse.json({ reply });
+    // Append the diagnostic error so we can read it instantly from the UI response if the call fails
+    return NextResponse.json({ 
+      reply: `${reply}\n\n[Diagnostic: ${errorMessage}]`
+    });
   }
 }
