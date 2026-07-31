@@ -182,11 +182,14 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
         if (error) throw error;
         if (!data?.user) throw new Error("Could not authenticate user.");
         
+        const isAdminEmail = data.user.email?.toLowerCase() === "graphixlab07@gmail.com" || data.user.email?.toLowerCase() === "admin@graphixlab.com";
+        const userRole = isAdminEmail ? "admin" : "client";
+
         onSuccess({
           uid: data.user.id,
           email: data.user.email,
           displayName: data.user.user_metadata?.name || data.user.email?.split("@")[0],
-          role: data.user.role || "client"
+          role: userRole
         });
       }
       onClose();
@@ -219,21 +222,6 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
     }
   };
 
-  const handleDemoAccess = (role: "admin" | "client") => {
-    const demoUser = role === "admin" ? {
-      uid: "demo_admin_uid",
-      email: "graphixlab07@gmail.com",
-      displayName: "GraphixLab Owner (Demo)",
-      role: "admin"
-    } : {
-      uid: "demo_client_uid",
-      email: email || "client@example.com",
-      displayName: name || "Demo Client",
-      role: "client"
-    };
-    onSuccess(demoUser);
-    onClose();
-  };
 
   const getTitle = () => {
     switch (mode) {
@@ -533,29 +521,6 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
             </button>
           )}
 
-          {/* Quick Demo Mode Access (Only show during login/signup) */}
-          {(mode === 'signin' || mode === 'signup') && (
-            <div className="pt-2">
-              <p className="text-[10px] uppercase font-bold text-purple-300/60 tracking-wider mb-2">Instant Demo Session</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDemoAccess("client")}
-                  className="btn-liquid-glass-secondary py-2 px-3 text-purple-200 text-xs font-semibold cursor-pointer"
-                >
-                  Client Demo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDemoAccess("admin")}
-                  className="btn-liquid-glass py-2 px-3 text-purple-200 text-xs font-semibold cursor-pointer"
-                >
-                  Admin Demo
-                </button>
-              </div>
-            </div>
-          )}
-          
           <div className="flex items-start gap-2 text-[10px] text-purple-400/50 text-left p-2.5 rounded-xl bg-white/[0.01]">
             <Info className="w-3.5 h-3.5 shrink-0 text-purple-500/50" />
             <span>Logging in with <b>graphixlab07@gmail.com</b> automatically grants Graphix Lab Admin Management access.</span>

@@ -59,12 +59,19 @@ export default function Home() {
             const displayName = user.user_metadata?.name || user.email?.split("@")[0];
             profile = await createUserProfile(user.id, user.email!, displayName);
           }
-          setUserProfile(profile);
+          const isAdminEmail = user.email?.toLowerCase() === "graphixlab07@gmail.com" || user.email?.toLowerCase() === "admin@graphixlab.com";
+          const userRole = isAdminEmail ? "admin" : (profile?.role || "client");
+
+          setUserProfile({
+            ...(profile || {}),
+            role: userRole
+          } as UserProfile);
+
           setCurrentUser({
             uid: user.id,
             email: user.email,
             displayName: user.user_metadata?.name || user.email?.split("@")[0],
-            role: profile?.role || "client"
+            role: userRole
           });
 
           // Trigger floating toast message on explicit user logins / signups

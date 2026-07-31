@@ -37,9 +37,11 @@ import {
   Trash2,
   Star,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Camera
 } from "lucide-react";
 import { parseNotes } from "@/lib/attachments";
+import { supabase } from "@/lib/supabase";
 
 interface AdminDashboardProps {
   currentUser: any;
@@ -57,6 +59,68 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [actioningRequestId, setActioningRequestId] = useState<string | null>(null);
   const [actioningReviewId, setActioningReviewId] = useState<string | null>(null);
+  const [avatar, setAvatar] = useState<string>("");
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (currentUser?.uid) {
+      const localAvatar = localStorage.getItem(`avatar_${currentUser.uid}`);
+      if (localAvatar) {
+        setAvatar(localAvatar);
+      }
+      
+      const loadDbAvatar = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("users")
+            .select("avatar_url, avatarUrl")
+            .eq("uid", currentUser.uid)
+            .single();
+          if (!error && data) {
+            const dbAvatar = data.avatar_url || data.avatarUrl;
+            if (dbAvatar) {
+              setAvatar(dbAvatar);
+              localStorage.setItem(`avatar_${currentUser.uid}`, dbAvatar);
+            }
+          }
+        } catch (e) {
+          console.log("Error loading avatar from database:", e);
+        }
+      };
+      loadDbAvatar();
+    }
+  }, [currentUser?.uid]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Please choose an image file under 2MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64String = reader.result as string;
+      setAvatar(base64String);
+      localStorage.setItem(`avatar_${currentUser.uid}`, base64String);
+      
+      try {
+        const { updateUserProfileAvatar } = await import("@/lib/db");
+        await updateUserProfileAvatar(currentUser.uid, base64String);
+      } catch (err) {
+        console.error("Failed to update database avatar:", err);
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    reader.onerror = () => {
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
   
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState<string>("");
@@ -269,8 +333,35 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
       {/* Admin Title Block */}
       <div className="rounded-3xl bg-white/[0.03] backdrop-blur-md border border-white/10 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4 text-left">
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300">
-            <Sliders className="w-6 h-6 animate-pulse" />
+          <div className="relative group w-12 h-12 shrink-0">
+            {avatar ? (
+              <img
+                src={avatar}
+                alt="Profile"
+                className="w-12 h-12 rounded-2xl object-cover border border-purple-400/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 font-bold uppercase text-sm">
+                {currentUser?.displayName?.[0] || currentUser?.email?.[0] || "A"}
+              </div>
+            )}
+            
+            <label className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer border border-purple-400/50">
+              <Camera className="w-4 h-4 text-white" />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                disabled={isUploading}
+                className="hidden"
+              />
+            </label>
+            
+            {isUploading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-2xl border border-purple-400/50">
+                <span className="w-3.5 h-3.5 border-2 border-purple-400 border-t-transparent animate-spin rounded-full" />
+              </div>
+            )}
           </div>
           <div>
             <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest flex items-center gap-1.5">

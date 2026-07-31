@@ -47,6 +47,8 @@ export interface UserProfile {
   name: string;
   role: "client" | "admin";
   createdAt: string;
+  avatar_url?: string;
+  avatarUrl?: string;
 }
 
 export interface Booking {
@@ -142,6 +144,27 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
     return data as UserProfile;
   } catch (error) {
     handleSupabaseError(error, OperationType.GET, "users");
+  }
+}
+
+// Update user profile avatar url
+export async function updateUserProfileAvatar(uid: string, avatarUrl: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("users")
+      .update({ avatar_url: avatarUrl })
+      .eq("uid", uid);
+    
+    if (error) {
+      // Fallback try for avatarUrl column naming
+      const { error: errorFallback } = await supabase
+        .from("users")
+        .update({ avatarUrl })
+        .eq("uid", uid);
+      if (errorFallback) throw errorFallback;
+    }
+  } catch (error) {
+    console.warn("Database avatar update failed, fallback to local storage will occur:", error);
   }
 }
 
