@@ -124,8 +124,12 @@ export default function RiyaChatbot() {
             <div className="p-4 bg-[#1F0037] border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-9 h-9 rounded-full bg-[#35005D] border border-purple-400/20 flex items-center justify-center text-purple-300">
-                    <Sparkles className="w-5 h-5 text-gradient-neon animate-pulse" />
+                  <div className="w-9 h-9 rounded-full overflow-hidden border border-purple-400/20">
+                    <img 
+                      src="https://cdn.postimage.me/2026/07/31/1000072365.png" 
+                      alt="Riya AI Avatar" 
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#1F0037]" />
                 </div>
@@ -196,10 +200,14 @@ export default function RiyaChatbot() {
       {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full btn-liquid-glass text-white shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform duration-300 cursor-pointer relative group"
+        className="w-14 h-14 rounded-full bg-[#150025] hover:bg-[#1F0037] border border-purple-500/30 shadow-[0_0_15px_rgba(126,82,160,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer relative group overflow-hidden"
         aria-label="Open AI Assistant"
       >
-        <Sparkles className="w-6 h-6 animate-pulse" />
+        <img 
+          src="https://cdn.postimage.me/2026/07/31/1000072365.png" 
+          alt="Riya AI Avatar" 
+          className="w-full h-full object-cover" 
+        />
         
         {/* Tooltip tooltip */}
         <span className="absolute right-16 px-3 py-1.5 rounded-lg bg-[#1F0037] border border-white/10 text-[10px] font-bold text-purple-300 uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap shadow-xl">
