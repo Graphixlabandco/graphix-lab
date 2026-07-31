@@ -133,7 +133,7 @@ export default function Home() {
 
       {/* Portfolio Section */}
       <div ref={portfolioRef} id="portfolio">
-        <Portfolio />
+        <Portfolio currentUser={currentUser} />
       </div>
 
       {/* Booking Form Wizard */}

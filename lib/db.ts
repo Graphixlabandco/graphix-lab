@@ -294,3 +294,63 @@ export async function getTestimonials(): Promise<Testimonial[]> {
     handleSupabaseError(error, OperationType.LIST, "testimonials");
   }
 }
+
+// --- Service Portfolio Images Support ---
+export interface ServicePortfolioImage {
+  id: string;
+  service_id: string;
+  image_url: string;
+  created_at: string;
+}
+
+export async function getServicePortfolioImages(serviceId: string): Promise<ServicePortfolioImage[]> {
+  try {
+    const { data, error } = await supabase
+      .from("service_portfolio_images")
+      .select()
+      .eq("service_id", serviceId);
+    
+    if (error) throw error;
+    if (!data) return [];
+    
+    return (data as ServicePortfolioImage[]).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  } catch (error) {
+    console.warn("Could not load service portfolio images from Supabase. Falling back to local state.", error);
+    throw error;
+  }
+}
+
+export async function addServicePortfolioImage(serviceId: string, imageUrl: string): Promise<ServicePortfolioImage> {
+  const newImage = {
+    service_id: serviceId,
+    image_url: imageUrl
+  };
+  
+  try {
+    const { data, error } = await supabase
+      .from("service_portfolio_images")
+      .insert(newImage)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return data as ServicePortfolioImage;
+  } catch (error) {
+    console.error("Failed to add service portfolio image to Supabase:", error);
+    throw error;
+  }
+}
+
+export async function deleteServicePortfolioImage(imageId: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("service_portfolio_images")
+      .delete()
+      .eq("id", imageId);
+      
+    if (error) throw error;
+  } catch (error) {
+    console.error("Failed to delete service portfolio image from Supabase:", error);
+    throw error;
+  }
+}

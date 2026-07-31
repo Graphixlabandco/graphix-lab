@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Eye, X, ExternalLink, Sparkles, Send, Loader2, CheckCircle } from "lucide-react";
+import { Eye, X, ExternalLink, Sparkles, Send, Loader2, CheckCircle, Plus, Trash2, Paperclip } from "lucide-react";
 import Image from "next/image";
-import { createClientRequest } from "@/lib/db";
+import { createClientRequest, getServicePortfolioImages, addServicePortfolioImage, deleteServicePortfolioImage, ServicePortfolioImage } from "@/lib/db";
 
 interface PortfolioItem {
   id: string;
@@ -54,9 +54,107 @@ const portfolioItems: PortfolioItem[] = [
   }
 ];
 
-export default function Portfolio() {
+interface PortfolioProps {
+  currentUser?: any;
+}
+
+export default function Portfolio({ currentUser }: PortfolioProps = {}) {
   const [selectedCategory, setSelectedCategory] = useState<string>("Featured Works");
   const [selectedProject, setSelectedProject] = useState<PortfolioItem | null>(null);
+  
+  const [exampleImages, setExampleImages] = useState<ServicePortfolioImage[]>([]);
+  const [isLoadingExamples, setIsLoadingExamples] = useState<boolean>(false);
+  const [isUploadingExample, setIsUploadingExample] = useState<boolean>(false);
+  const [dbError, setDbError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedProject) {
+      setExampleImages([]);
+      setDbError(null);
+      return;
+    }
+
+    const loadExamples = async () => {
+      setIsLoadingExamples(true);
+      setDbError(null);
+      try {
+        const data = await getServicePortfolioImages(selectedProject.id);
+        setExampleImages(data);
+      } catch (err: any) {
+        console.warn("Using local storage fallback for service portfolio images:", err);
+        const local = localStorage.getItem(`examples_${selectedProject.id}`);
+        if (local) {
+          setExampleImages(JSON.parse(local));
+        } else {
+          setExampleImages([]);
+        }
+        setDbError("Supabase Table is missing. Portfolios will run in Local Mode on this browser until SQL script is run.");
+      } finally {
+        setIsLoadingExamples(false);
+      }
+    };
+
+    loadExamples();
+  }, [selectedProject]);
+
+  const handleUploadExample = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !selectedProject) return;
+    const file = e.target.files[0];
+    if (file.size > 4 * 1024 * 1024) {
+      alert("Image size is too large. Max size is 4MB.");
+      return;
+    }
+
+    setIsUploadingExample(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = err => reject(err);
+      });
+
+      let newImg: ServicePortfolioImage;
+      try {
+        newImg = await addServicePortfolioImage(selectedProject.id, base64);
+        setExampleImages(prev => [...prev, newImg]);
+      } catch (dbErr) {
+        const fallbackImg: ServicePortfolioImage = {
+          id: "img_" + Math.random().toString(36).substring(2, 11),
+          service_id: selectedProject.id,
+          image_url: base64,
+          created_at: new Date().toISOString()
+        };
+        const updated = [...exampleImages, fallbackImg];
+        setExampleImages(updated);
+        localStorage.setItem(`examples_${selectedProject.id}`, JSON.stringify(updated));
+      }
+    } catch (err) {
+      console.error("Failed to upload image example:", err);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setIsUploadingExample(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDeleteExample = async (imageId: string) => {
+    if (!confirm("Are you sure you want to delete this example portfolio image?") || !selectedProject) return;
+
+    try {
+      try {
+        await deleteServicePortfolioImage(imageId);
+      } catch (dbErr) {
+        console.warn("Deleting from local fallback...");
+      }
+      
+      const updated = exampleImages.filter(img => img.id !== imageId);
+      setExampleImages(updated);
+      localStorage.setItem(`examples_${selectedProject.id}`, JSON.stringify(updated));
+    } catch (err) {
+      console.error("Failed to delete example image:", err);
+    }
+  };
 
   // Categories requested in the specific menu:
   const categories = [
@@ -266,6 +364,94 @@ export default function Portfolio() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Portfolio Examples Section */}
+              <div className="mt-8 pt-8 border-t border-white/10 space-y-4 text-left">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-purple-300 uppercase tracking-widest">
+                    Example Portfolio Works
+                  </h4>
+                  
+                  {/* Admin Upload Trigger */}
+                  {currentUser?.role === "admin" && (
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 cursor-pointer shadow-lg hover:shadow-purple-500/20">
+                      {isUploadingExample ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Work Image</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleUploadExample}
+                        className="hidden"
+                        disabled={isUploadingExample}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* DB Table Alert for Admin */}
+                {dbError && currentUser?.role === "admin" && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 font-medium">
+                    ⚠️ {dbError}
+                  </div>
+                )}
+
+                {isLoadingExamples ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+                  </div>
+                ) : exampleImages.length === 0 ? (
+                  <div className="text-center py-12 rounded-2xl bg-white/[0.01] border border-white/5">
+                    <p className="text-purple-200/40 text-xs">No example works uploaded yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {exampleImages.map((img) => (
+                      <div 
+                        key={img.id}
+                        className="group/item relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 shadow-inner"
+                      >
+                        <img
+                          src={img.image_url}
+                          alt="Portfolio example work"
+                          className="object-cover w-full h-full group-hover/item:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                        
+                        {/* Hover Controls */}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                          {currentUser?.role === "admin" ? (
+                            <button
+                              onClick={() => handleDeleteExample(img.id)}
+                              className="p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors duration-300 cursor-pointer shadow-lg"
+                              title="Delete example image"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <a
+                              href={img.image_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3 py-1.5 rounded-lg bg-purple-500 text-white text-[10px] font-bold uppercase tracking-wider cursor-pointer shadow-lg hover:bg-purple-600 transition-colors duration-300"
+                            >
+                              View Full Size
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
