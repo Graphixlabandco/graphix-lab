@@ -39,16 +39,21 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
       }
       setIsSubmitting(true);
       try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/hub`,
+        });
         if (error) throw error;
-        setSuccessMessage("A verification code has been sent to your email.");
+        setSuccessMessage("A verification link/code has been sent to your email. Please check your Inbox and Spam folder!");
         setTimeout(() => {
           setMode('verify-otp');
           setSuccessMessage("");
-        }, 1500);
+        }, 3000);
       } catch (error: any) {
         console.error("Reset password error:", error);
-        setErrorMessage(error.message || "Could not send verification code. Please try again.");
+        const errMsg = error && typeof error === "object"
+          ? error.message || error.error_description || JSON.stringify(error)
+          : String(error);
+        setErrorMessage(errMsg || "Could not send verification code. Please try again.");
       } finally {
         setIsSubmitting(false);
       }
@@ -75,7 +80,10 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
         }, 1500);
       } catch (error: any) {
         console.error("OTP verification error:", error);
-        setErrorMessage(error.message || "Invalid or expired verification code. Please check and try again.");
+        const errMsg = error && typeof error === "object"
+          ? error.message || error.error_description || JSON.stringify(error)
+          : String(error);
+        setErrorMessage(errMsg || "Invalid or expired verification code. Please check and try again.");
       } finally {
         setIsSubmitting(false);
       }
