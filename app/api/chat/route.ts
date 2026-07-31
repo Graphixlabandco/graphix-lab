@@ -60,30 +60,61 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ 
-        contents,
-        systemInstruction: {
-          parts: [{ text: systemPrompt }]
+    // Try stable v1 endpoint first, fall back to v1beta, then try gemini-2.5-flash
+    const endpoints = [
+      {
+        url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        body: { 
+          contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] }
         }
-      })
-    });
+      },
+      {
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        body: { 
+          contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        }
+      },
+      {
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        body: { 
+          contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        }
+      }
+    ];
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini API returned status ${response.status}: ${errText}`);
+    let lastError = null;
+    let responseData = null;
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(endpoint.body)
+        });
+        
+        if (response.ok) {
+          responseData = await response.json();
+          break; // Succeeded!
+        } else {
+          const errText = await response.text();
+          lastError = new Error(`Status ${response.status} from model endpoint: ${errText}`);
+        }
+      } catch (err: any) {
+        lastError = err;
+      }
     }
 
-    const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+    if (!responseData) {
+      throw lastError || new Error("Failed to connect to any Gemini API model endpoint");
+    }
+
+    const reply = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!reply) {
-      throw new Error("No text response from Gemini API");
+      throw new Error("Empty text reply candidates from Gemini API");
     }
 
     return NextResponse.json({ reply });
@@ -127,7 +158,7 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       reply = "Our project pricing depends on your requirements. You can customize your project budget when submitting a booking request or customized service idea!";
     }
     
-    // Append the diagnostic error so we can read it instantly from the UI response if the call fails
+    // We append the diagnostics ONLY if all model endpoints failed so the admin can debug
     return NextResponse.json({ 
       reply: `${reply}\n\n[Diagnostic: ${errorMessage}]`
     });
