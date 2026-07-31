@@ -413,3 +413,79 @@ export async function deleteTestimonial(id: string): Promise<void> {
     handleSupabaseError(error, OperationType.DELETE, "testimonials");
   }
 }
+
+// --- Chat Messages Support ---
+export interface ChatMessage {
+  id?: string;
+  session_id: string;
+  sender: "client" | "riya";
+  message_text: string;
+  created_at: string;
+}
+
+export async function getChatMessages(): Promise<ChatMessage[]> {
+  try {
+    const { data, error } = await supabase
+      .from("chat_messages")
+      .select();
+    
+    if (error) throw error;
+    if (!data) return [];
+    
+    return (data as ChatMessage[]).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  } catch (error) {
+    console.warn("Could not load chat messages from Supabase. Falling back to local state.", error);
+    throw error;
+  }
+}
+
+export async function sendChatMessage(sessionId: string, sender: "client" | "riya", messageText: string): Promise<ChatMessage> {
+  const newMsg = {
+    session_id: sessionId,
+    sender,
+    message_text: messageText,
+    created_at: new Date().toISOString()
+  };
+  
+  try {
+    const { data, error } = await supabase
+      .from("chat_messages")
+      .insert(newMsg)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return data as ChatMessage;
+  } catch (error) {
+    console.error("Failed to save chat message in Supabase:", error);
+    throw error;
+  }
+}
+
+export async function updateChatMessage(id: string, messageText: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("chat_messages")
+      .update({ message_text: messageText })
+      .eq("id", id);
+      
+    if (error) throw error;
+  } catch (error) {
+    console.error("Failed to update chat message in Supabase:", error);
+    throw error;
+  }
+}
+
+export async function deleteChatMessage(id: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("chat_messages")
+      .delete()
+      .eq("id", id);
+      
+    if (error) throw error;
+  } catch (error) {
+    console.error("Failed to delete chat message from Supabase:", error);
+    throw error;
+  }
+}

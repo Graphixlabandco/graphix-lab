@@ -5,16 +5,18 @@ import { motion, AnimatePresence } from "motion/react";
 import { 
   getAllBookings, 
   updateBookingStatus, 
-  getAllInquiries, 
   getAllClientRequests,
   updateClientRequestStatus,
   deleteClientRequest,
   deleteTestimonial,
   getTestimonials,
+  getChatMessages,
+  updateChatMessage,
+  deleteChatMessage,
   Booking, 
-  Inquiry,
   ClientRequest,
-  Testimonial
+  Testimonial,
+  ChatMessage
 } from "@/lib/db";
 import { 
   Calendar, 
@@ -34,7 +36,8 @@ import {
   Paperclip,
   Trash2,
   Star,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
 import { parseNotes } from "@/lib/attachments";
 
@@ -45,27 +48,30 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ currentUser, onLogout }: AdminDashboardProps) {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [clientRequests, setClientRequests] = useState<ClientRequest[]>([]);
   const [reviews, setReviews] = useState<Testimonial[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"bookings" | "inquiries" | "requests" | "reviews">("bookings");
+  const [activeTab, setActiveTab] = useState<"bookings" | "requests" | "chat" | "reviews">("bookings");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [actioningRequestId, setActioningRequestId] = useState<string | null>(null);
   const [actioningReviewId, setActioningReviewId] = useState<string | null>(null);
+  
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState<string>("");
 
   const syncAdminData = async () => {
     setIsLoading(true);
     try {
-      const [bookingsData, inquiriesData, requestsData, reviewsData] = await Promise.all([
+      const [bookingsData, chatData, requestsData, reviewsData] = await Promise.all([
         getAllBookings(),
-        getAllInquiries(),
+        getChatMessages().catch(() => []),
         getAllClientRequests().catch(() => []),
         getTestimonials().catch(() => [])
       ]);
       setBookings(bookingsData);
-      setInquiries(inquiriesData);
+      setChatMessages(chatData);
       setClientRequests(requestsData);
       setReviews(reviewsData);
     } catch (error) {
@@ -80,15 +86,15 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
     const load = async () => {
       setIsLoading(true);
       try {
-        const [bookingsData, inquiriesData, requestsData, reviewsData] = await Promise.all([
+        const [bookingsData, chatData, requestsData, reviewsData] = await Promise.all([
           getAllBookings(),
-          getAllInquiries(),
+          getChatMessages().catch(() => []),
           getAllClientRequests().catch(() => []),
           getTestimonials().catch(() => [])
         ]);
         if (active) {
           setBookings(bookingsData);
-          setInquiries(inquiriesData);
+          setChatMessages(chatData);
           setClientRequests(requestsData);
           setReviews(reviewsData);
         }
@@ -161,6 +167,30 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
     }
   };
 
+  const handleUpdateChatMessage = async (messageId: string) => {
+    if (!editingText.trim()) return;
+    try {
+      await updateChatMessage(messageId, editingText);
+      setChatMessages((prev) =>
+        prev.map((msg) => (msg.id === messageId ? { ...msg, message_text: editingText } : msg))
+      );
+      setEditingMessageId(null);
+      setEditingText("");
+    } catch (error) {
+      console.error("Failed to edit chat message:", error);
+    }
+  };
+
+  const handleDeleteChatMessage = async (messageId: string) => {
+    if (!confirm("Are you sure you want to delete this chat message?")) return;
+    try {
+      await deleteChatMessage(messageId);
+      setChatMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+    } catch (error) {
+      console.error("Failed to delete chat message:", error);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -190,12 +220,30 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
     b.id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Filter inquiries
-  const filteredInquiries = inquiries.filter((inq) =>
-    inq.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    inq.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    inq.subject.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Group chat messages by session
+  const chatSessions: { [key: string]: ChatMessage[] } = {};
+  chatMessages.forEach((msg) => {
+    if (!chatSessions[msg.session_id]) {
+      chatSessions[msg.session_id] = [];
+    }
+    chatSessions[msg.session_id].push(msg);
+  });
+
+  const sessionIds = Object.keys(chatSessions).sort((a, b) => {
+    const aMsgs = chatSessions[a];
+    const bMsgs = chatSessions[b];
+    const aTime = aMsgs.length > 0 ? new Date(aMsgs[aMsgs.length - 1].created_at).getTime() : 0;
+    const bTime = bMsgs.length > 0 ? new Date(bMsgs[bMsgs.length - 1].created_at).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  const filteredSessionIds = sessionIds.filter((sessId) => {
+    const msgs = chatSessions[sessId];
+    return msgs.some((m) =>
+      m.message_text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.session_id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   // Filter requests
   const filteredRequests = clientRequests.filter((req) =>
@@ -214,6 +262,7 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
   // Statistics summaries
   const pendingCount = bookings.filter(b => b.status === "pending").length;
   const confirmedCount = bookings.filter(b => b.status === "confirmed").length;
+  const totalSessions = Object.keys(chatSessions).length;
 
   return (
     <div id="admin-management-console" className="space-y-8">
@@ -266,9 +315,9 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
         </div>
 
         <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 text-left">
-          <span className="text-purple-400/60 font-bold text-[10px] uppercase tracking-widest block">TOTAL INQUIRIES</span>
-          <span className="text-3xl font-black text-white block mt-2">{inquiries.length} Message{inquiries.length !== 1 && "s"}</span>
-          <span className="text-xs text-purple-300 mt-1 block font-medium">From Leads</span>
+          <span className="text-purple-400/60 font-bold text-[10px] uppercase tracking-widest block">AI CHAT SESSIONS</span>
+          <span className="text-3xl font-black text-white block mt-2">{totalSessions} Session{totalSessions !== 1 && "s"}</span>
+          <span className="text-xs text-purple-300 mt-1 block font-medium">From Riya Assist</span>
         </div>
       </div>
 
@@ -304,16 +353,16 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
               </span>
             </button>
             <button
-              onClick={() => { setActiveTab("inquiries"); setSearchQuery(""); }}
+              onClick={() => { setActiveTab("chat"); setSearchQuery(""); }}
               className={`px-4 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider cursor-pointer ${
-                activeTab === "inquiries"
+                activeTab === "chat"
                   ? "btn-liquid-glass text-purple-200"
                   : "btn-liquid-glass-secondary text-purple-200/50 hover:text-white"
               }`}
             >
               <span className="flex items-center gap-1.5">
-                <Inbox className="w-3.5 h-3.5" />
-                <span>Inquiries ({inquiries.length})</span>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>AI Assist ({totalSessions})</span>
               </span>
             </button>
             <button
@@ -535,39 +584,103 @@ export default function AdminDashboard({ currentUser, onLogout }: AdminDashboard
               ))}
             </div>
           )
-        ) : activeTab === "inquiries" ? (
-          /* Inquiries Tab */
-          filteredInquiries.length === 0 ? (
+        ) : activeTab === "chat" ? (
+          /* AI Assist Chats Tab */
+          filteredSessionIds.length === 0 ? (
             <div className="py-16 text-center text-purple-200/50 text-xs">
-              <Inbox className="w-8 h-8 mx-auto mb-3 text-purple-500/30" />
-              <span>No inquires found matching search query.</span>
+              <Sparkles className="w-8 h-8 mx-auto mb-3 text-purple-500/30 animate-pulse" />
+              <span>No AI chat sessions found.</span>
             </div>
           ) : (
-            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
-              {filteredInquiries.map((inq) => (
-                <div
-                  key={inq.id}
-                  className="p-5 rounded-2xl bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 transition-all duration-300 text-left space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-purple-400 tracking-wider">
-                        SUBJECT: {inq.subject}
+            <div className="space-y-6 max-h-[500px] overflow-y-auto pr-1">
+              {filteredSessionIds.map((sessId) => {
+                const sessionMsgs = chatSessions[sessId];
+                const lastMsg = sessionMsgs[sessionMsgs.length - 1];
+                return (
+                  <div
+                    key={sessId}
+                    className="p-5 rounded-2xl bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 transition-all duration-300 text-left space-y-4"
+                  >
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
+                      <div>
+                        <span className="px-2.5 py-0.5 rounded text-[9px] font-bold bg-[#35005D]/20 text-purple-300 uppercase tracking-widest border border-purple-500/10">
+                          Session: {sessId}
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-purple-400/40 font-mono">
+                        LAST ACTIVITY: {new Date(lastMsg.created_at).toLocaleString()}
                       </span>
-                      <h5 className="text-sm font-bold text-white mt-1">
-                        {inq.name} <span className="text-purple-400/60 font-normal">({inq.email})</span>
-                      </h5>
                     </div>
-                    <span className="text-[10px] text-purple-400/40">
-                      DISPATCHED: {new Date(inq.createdAt).toLocaleString()}
-                    </span>
-                  </div>
 
-                  <p className="text-xs text-purple-200/70 leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5 italic">
-                    &quot;{inq.message}&quot;
-                  </p>
-                </div>
-              ))}
+                    <div className="space-y-3 pl-2">
+                      {sessionMsgs.map((msg) => (
+                        <div 
+                          key={msg.id}
+                          className={`flex items-start justify-between gap-4 p-3 rounded-xl group/msg text-xs ${
+                            msg.sender === "riya" 
+                              ? "bg-[#1F0037]/45 border border-purple-950/20 text-purple-200" 
+                              : "bg-[#35005D]/10 text-white"
+                          }`}
+                        >
+                          <div className="space-y-1 w-[80%]">
+                            <span className="text-[8px] font-bold uppercase tracking-widest block opacity-60">
+                              {msg.sender === "riya" ? "Riya (AI Agent)" : "Client"}
+                            </span>
+                            
+                            {editingMessageId === msg.id ? (
+                              <div className="flex flex-col gap-2 mt-1">
+                                <textarea
+                                  value={editingText}
+                                  onChange={(e) => setEditingText(e.target.value)}
+                                  className="w-full px-3 py-2 text-xs rounded-lg bg-[#2A0049] border border-white/10 text-white focus:outline-none focus:border-purple-500 placeholder-purple-200/20 resize-none"
+                                  rows={3}
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleUpdateChatMessage(msg.id!)}
+                                    className="px-2.5 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-[9px] font-bold uppercase cursor-pointer"
+                                  >
+                                    Save Override
+                                  </button>
+                                  <button
+                                    onClick={() => { setEditingMessageId(null); setEditingText(""); }}
+                                    className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-purple-300 text-[9px] font-bold uppercase cursor-pointer"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="leading-relaxed whitespace-pre-wrap">{msg.message_text}</p>
+                            )}
+                          </div>
+
+                          {/* Message Actions */}
+                          {editingMessageId !== msg.id && (
+                            <div className="flex items-center gap-1.5 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                              {msg.sender === "riya" && (
+                                <button
+                                  onClick={() => { setEditingMessageId(msg.id!); setEditingText(msg.message_text); }}
+                                  className="px-2 py-1 rounded bg-[#35005D] hover:bg-purple-700 text-purple-200 hover:text-white text-[9px] font-bold uppercase transition-colors cursor-pointer"
+                                >
+                                  Edit
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeleteChatMessage(msg.id!)}
+                                className="p-1 rounded bg-white/5 hover:bg-red-500/25 text-purple-400 hover:text-red-300 transition-colors cursor-pointer"
+                                title="Delete Message"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )
         ) : (

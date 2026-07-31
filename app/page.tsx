@@ -16,6 +16,7 @@ import AdminDashboard from "@/components/AdminDashboard";
 import HostingPlan from "@/components/HostingPlan";
 import { motion, AnimatePresence } from "motion/react";
 import { Sliders, Sparkles, LayoutDashboard, CalendarRange, FolderLock } from "lucide-react";
+import RiyaChatbot from "@/components/RiyaChatbot";
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -258,6 +259,9 @@ export default function Home() {
           />
         )}
       </AnimatePresence>
+
+      {/* Floating AI Chatbot Widget */}
+      <RiyaChatbot />
     </main>
   );
 }
