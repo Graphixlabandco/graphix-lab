@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { getUserProfile, UserProfile } from "@/lib/db";
+import { getUserProfile, createUserProfile, UserProfile } from "@/lib/db";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import UniverseBackground from "@/components/UniverseBackground";
@@ -47,7 +47,12 @@ export default function Home() {
       if (user) {
         // Fetch detailed profile for roles (admin vs client)
         try {
-          const profile = await getUserProfile(user.id);
+          let profile = await getUserProfile(user.id);
+          if (!profile) {
+            // Automatically provision a client profile for OAuth sign-in users
+            const displayName = user.user_metadata?.name || user.email?.split("@")[0];
+            profile = await createUserProfile(user.id, user.email!, displayName);
+          }
           setUserProfile(profile);
           setCurrentUser({
             uid: user.id,
@@ -56,7 +61,7 @@ export default function Home() {
             role: profile?.role || "client"
           });
         } catch (error) {
-          console.error("Error loading user profile:", error);
+          console.error("Error loading or provisioning user profile:", error);
           setCurrentUser({
             uid: user.id,
             email: user.email,

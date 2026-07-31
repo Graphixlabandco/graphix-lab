@@ -196,6 +196,26 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setErrorMessage("");
+    setSuccessMessage("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/hub`
+        }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Google sign in error:", error);
+      const errMsg = error && typeof error === "object"
+        ? error.message || error.error_description || JSON.stringify(error)
+        : String(error);
+      setErrorMessage(errMsg || "Could not login with Google. Please try again.");
+    }
+  };
+
   const handleDemoAccess = (role: "admin" | "client") => {
     const demoUser = role === "admin" ? {
       uid: "demo_admin_uid",
@@ -460,6 +480,28 @@ export default function AuthPortal({ onClose, onSuccess, initialMode = 'signin' 
             </button>
           </div>
         </form>
+
+        {/* Google OAuth Divider & Button */}
+        {(mode === 'signin' || mode === 'signup') && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 my-4">
+              <div className="h-px bg-white/5 flex-1" />
+              <span className="text-[10px] font-bold text-purple-400/40 uppercase tracking-widest">OR</span>
+              <div className="h-px bg-white/5 flex-1" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 text-white font-bold text-xs tracking-wider transition-all duration-300 cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5 shrink-0 text-purple-200" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.565 0-6.452-2.887-6.452-6.452s2.887-6.452 6.452-6.452c1.611 0 3.08.59 4.218 1.558l3.14-3.14C19.347 2.226 15.935 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.262 0 11.36-4.506 11.36-11.24 0-.756-.067-1.488-.192-2.195H12.24z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+          </div>
+        )}
 
         {/* Toggle and Info Section */}
         <div className="mt-5 border-t border-white/5 pt-4 text-center space-y-3">
