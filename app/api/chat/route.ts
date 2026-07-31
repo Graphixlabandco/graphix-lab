@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 
+// Force dynamic execution so environment variables are read at runtime on Vercel
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   const { message, history } = await request.json();
   const apiKey = process.env.GEMINI_API_KEY;
 
-  // The system instructions for Riya
   const systemPrompt = `You are Riya, the 24/7 official AI Assistant for Graphix Lab. Graphix Lab is an elite generative design and brand studio.
 Our main services are:
 1. Logo & Brand Identity (Elite vector marks, typography rules, branding guidebooks)
@@ -25,7 +27,7 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
 
   try {
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set by admin");
+      throw new Error("GEMINI_API_KEY environment variable is not defined");
     }
 
     // Build alternating message history for Gemini API
@@ -33,7 +35,6 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
     const chatHistory = history || [];
 
     chatHistory.forEach((msg: any) => {
-      // Skip the initial greeting if it has no preceding user message (strict alternating starts with user)
       if (msg.sender === "riya" && contents.length === 0) {
         return; 
       }
@@ -41,7 +42,6 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       const role = msg.sender === "client" ? "user" : "model";
       
       if (contents.length > 0 && contents[contents.length - 1].role === role) {
-        // Concatenate consecutive turns from the same role
         contents[contents.length - 1].parts[0].text += "\n" + msg.message_text;
       } else {
         contents.push({
@@ -51,7 +51,6 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       }
     });
 
-    // Append the client's current message
     if (contents.length > 0 && contents[contents.length - 1].role === "user") {
       contents[contents.length - 1].parts[0].text += "\n" + message;
     } else {
@@ -61,7 +60,6 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       });
     }
 
-    // Call the most stable Gemini 1.5 Flash model
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: 'POST',
@@ -78,7 +76,6 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("Gemini API error payload:", errText);
       throw new Error(`Gemini API returned status ${response.status}: ${errText}`);
     }
 
@@ -92,13 +89,19 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
     return NextResponse.json({ reply });
 
   } catch (error: any) {
-    console.error("Chat API error, falling back to local assistant:", error);
+    console.error("Gemini call failed, executing smart assistant responder:", error);
     
-    // Generate smart local fallback reply if Gemini API key fails or network errors occur
+    // Highly comprehensive fallback responder representing Riya
     const msgLower = message.toLowerCase();
-    let reply = "Hello! I am Riya, your Graphix Lab Assistant. How can I assist you with your design, logo branding, UI/UX, or coding needs today?";
-    
-    if (msgLower.includes("logo") || msgLower.includes("brand")) {
+    let reply = "I am here to assist you with any questions! As Riya, the Graphix Lab assistant, I can guide you through our services (branding, UI/UX, 3D animations, vibe coding), explain how to sign up, or how to submit custom requests.";
+
+    if (msgLower.includes("sign up") || msgLower.includes("signup") || msgLower.includes("register") || msgLower.includes("create account")) {
+      reply = "To sign up, click on the 'My Hub' button in the top right corner of the navigation bar, choose 'Create Account', enter your email, password, and full name, and submit. You can then access your personal dashboard!";
+    } else if (msgLower.includes("login") || msgLower.includes("signin") || msgLower.includes("sign in") || msgLower.includes("my hub")) {
+      reply = "You can sign in by clicking 'My Hub' at the top right, entering your email and password, and clicking 'Sign In'. If you forgot your password, there is an OTP password recovery option available right inside the form.";
+    } else if (msgLower.includes("contact") || msgLower.includes("admin") || msgLower.includes("email") || msgLower.includes("reach out")) {
+      reply = "You can contact our administration directly at graphixlab07@gmail.com. When you book a session or submit a custom idea request, an automated email notification with your details is instantly dispatched to us.";
+    } else if (msgLower.includes("logo") || msgLower.includes("brand")) {
       reply = "We offer premium Logo & Brand Identity services! This includes custom vector logo designs, typography sheets, and complete corporate identity style guides. You can book a session via the 'Book Design' tab above.";
     } else if (msgLower.includes("ui") || msgLower.includes("ux") || msgLower.includes("design")) {
       reply = "Our UI/UX & Digital Product Design service creates high-fidelity, interactive prototypes and design systems for web and mobile apps. Let's design something stunning!";
