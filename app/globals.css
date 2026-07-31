@@ -1,32 +1,32 @@
 @import "tailwindcss";
 
 body {
-  background-color: #012A36;
-  color: #ffffff;
+  background-color: #1E2749;
+  color: #FAFAFF;
 }
 
 @theme {
-  /* New Space Indigo & Lilac Palette */
-  --color-obsidian-violet: #012A36;     /* Main Deep Background: Jet Black */
-  --color-slate-blue: #7E52A0;          /* Primary Accent: Deep Lilac */
-  --color-soft-periwinkle: #D295BF;     /* Secondary Accent: Lilac */
-  --color-wisteria-lavender: #E6BCCD;   /* Muted Text & Accents: Pastel Petal */
-  --color-powder-petal: #FFFFFF;        /* Highlights: White */
+  /* New Space Indigo & Periwinkle Palette */
+  --color-obsidian-violet: #1E2749;     /* Main Deep Background: Space Indigo */
+  --color-slate-blue: #E4D9FF;          /* Primary Accent: Periwinkle */
+  --color-soft-periwinkle: #273469;     /* Secondary Accent: Twilight Indigo */
+  --color-wisteria-lavender: #E4D9FF;   /* Muted Text & Accents: Periwinkle */
+  --color-powder-petal: #FAFAFF;        /* Highlights: Ghost White */
 
-  /* Cyber overrides mapped to the space indigo / lilac spectrum */
-  --color-cyber-50: #fff0f5;
-  --color-cyber-100: #ffe4e1;
-  --color-cyber-200: #f8bbd0;
-  --color-cyber-300: #E6BCCD;     /* Pastel Petal */
-  --color-cyber-400: #D295BF;     /* Lilac */
-  --color-cyber-500: #7E52A0;     /* Deep Lilac */
-  --color-cyber-600: #5F3A7A;     /* Darker Lilac */
-  --color-cyber-700: #29274C;     /* Space Indigo (Surface/Card BG) */
-  --color-cyber-800: #012A36;     /* Jet Black */
-  --color-cyber-900: #012A36;     /* Jet Black */
-  --color-cyber-950: #00131A;     /* Deeper Jet Black */
+  /* Cyber overrides mapped to the space indigo / periwinkle spectrum */
+  --color-cyber-50: #fafaff;
+  --color-cyber-100: #f0efff;
+  --color-cyber-200: #e4d9ff;     /* Periwinkle */
+  --color-cyber-300: #c5b4ff;
+  --color-cyber-400: #a28cff;
+  --color-cyber-500: #e4d9ff;     /* Primary: Periwinkle */
+  --color-cyber-600: #273469;     /* Secondary: Twilight Indigo */
+  --color-cyber-700: #273469;     /* Card/Modal/Navbar BG */
+  --color-cyber-800: #30343F;     /* Jet Black (Secondary Surface) */
+  --color-cyber-900: #1E2749;     /* Space Indigo */
+  --color-cyber-950: #11162d;     /* Deeper Space Indigo */
 
-  /* Map standard purple and indigo classes to the new lilac/indigo palette */
+  /* Map standard purple and indigo classes to the new periwinkle/indigo palette */
   --color-purple-50: var(--color-cyber-50);
   --color-purple-100: var(--color-cyber-100);
   --color-purple-200: var(--color-cyber-200);
@@ -52,16 +52,18 @@ body {
   --color-indigo-950: var(--color-cyber-950);
 
   /* Set dark-mode base tones to deep space background to harmonize perfectly */
-  --color-zinc-900: #29274C;
-  --color-zinc-950: #012A36;
+  --color-zinc-900: #273469;
+  --color-zinc-950: #1E2749;
 }
 
-/* Linear gradient "Liquid Glass" CTA Button - Matching new palette */
+/* Saturated Solid "Liquid Glass" CTA Button - Periwinkle with strong dark-text contrast */
 .btn-liquid-glass {
-  background: linear-gradient(135deg, #7E52A0 0%, #D295BF 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #E4D9FF; /* Solid Periwinkle */
+  color: #1E2749;      /* Deep Space Indigo Text for high contrast */
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
-  box-shadow: 0 4px 14px rgba(126, 82, 160, 0.35);
+  box-shadow: 0 4px 14px rgba(228, 217, 255, 0.4);
+  font-weight: 700;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
@@ -69,19 +71,20 @@ body {
 }
 
 .btn-liquid-glass:hover {
-  background: linear-gradient(135deg, #D295BF 0%, #E6BCCD 100%);
+  background: #FAFAFF; /* Ghost White hover */
+  color: #1E2749;
   transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px rgba(210, 149, 191, 0.5);
+  box-shadow: 0 6px 18px rgba(250, 250, 255, 0.6);
 }
 
 .btn-liquid-glass:active {
   transform: translateY(1px);
 }
 
-/* Secondary CTA (Space Indigo glass background with subtle stroke) */
+/* Secondary CTA (Twilight Indigo glass background with subtle stroke) */
 .btn-liquid-glass-secondary {
-  background: rgba(41, 39, 76, 0.4);
-  border: 1px solid rgba(126, 82, 160, 0.25);
+  background: rgba(39, 52, 105, 0.4);
+  border: 1px solid rgba(228, 217, 255, 0.25);
   border-radius: 9999px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -90,13 +93,13 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #E6BCCD;
+  color: #E4D9FF;
 }
 
 .btn-liquid-glass-secondary:hover {
-  background: rgba(126, 82, 160, 0.15);
-  border: 1px solid rgba(126, 82, 160, 0.4);
-  color: #ffffff;
+  background: rgba(228, 217, 255, 0.15);
+  border: 1px solid rgba(228, 217, 255, 0.45);
+  color: #FAFAFF;
   transform: translateY(-1.5px);
 }
 
@@ -104,9 +107,21 @@ body {
   transform: translateY(1px);
 }
 
-/* White to Pastel Petal text gradient */
+/* Form input elements override globally to match Jet Black (#30343F) surface requirement */
+input[type="text"], input[type="email"], input[type="password"], input[type="date"], select, textarea {
+  background-color: #30343F !important;
+  border-color: rgba(228, 217, 255, 0.2) !important;
+  color: #FAFAFF !important;
+}
+
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+  border-color: #E4D9FF !important;
+  box-shadow: 0 0 0 2px rgba(228, 217, 255, 0.2) !important;
+}
+
+/* Ghost White to Periwinkle text gradient */
 .text-gradient-neon {
-  background: linear-gradient(90deg, #FFFFFF 0%, #E6BCCD 40%, #D295BF 70%, #7E52A0 100%);
+  background: linear-gradient(90deg, #FAFAFF 0%, #E4D9FF 50%, #c5b4ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
