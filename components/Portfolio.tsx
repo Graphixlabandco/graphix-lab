@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Eye, X, ExternalLink, Sparkles, Send, Loader2, CheckCircle, Plus, Trash2, Paperclip } from "lucide-react";
 import Image from "next/image";
 import { createClientRequest, getServicePortfolioImages, addServicePortfolioImage, deleteServicePortfolioImage, ServicePortfolioImage } from "@/lib/db";
+import { formatNotesWithAttachments, Attachment } from "@/lib/attachments";
 
 interface PortfolioItem {
   id: string;
@@ -466,6 +467,8 @@ function ClientRequestFormCard() {
   const [userName, setUserName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [email, setEmail] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -479,15 +482,37 @@ function ClientRequestFormCard() {
     setIsSending(true);
     setError("");
     try {
+      const finalDesc = formatNotesWithAttachments(projectDesc, attachments);
+
       await createClientRequest({
         userName,
-        projectDescription: projectDesc,
+        projectDescription: finalDesc,
         email
       });
+
+      // Send email alert to admin
+      try {
+        await fetch("/api/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            clientName: userName,
+            clientEmail: email,
+            notes: finalDesc,
+            isClientRequest: true
+          })
+        });
+      } catch (emailErr) {
+        console.error("Failed to send custom service request email alert:", emailErr);
+      }
+
       setIsSuccess(true);
       setUserName("");
       setProjectDesc("");
       setEmail("");
+      setAttachments([]);
     } catch (err) {
       console.error(err);
       setError("Failed to dispatch your idea. Please try again.");
@@ -549,7 +574,7 @@ function ClientRequestFormCard() {
                 className="w-full px-3 py-2 text-xs rounded-lg bg-white/[0.02] border border-white/5 text-white focus:outline-none focus:border-purple-500 transition-all placeholder-purple-200/20"
               />
             </div>
-            <div className="space-y-1">
+             <div className="space-y-1">
               <label className="text-[9px] uppercase font-semibold text-purple-300 block">Project Description</label>
               <textarea
                 required
@@ -560,6 +585,86 @@ function ClientRequestFormCard() {
                 className="w-full px-3 py-2 text-xs rounded-lg bg-white/[0.02] border border-white/5 text-white focus:outline-none focus:border-purple-500 transition-all placeholder-purple-200/20 resize-none"
               />
             </div>
+
+            {/* Media File Upload in Idea Form */}
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase font-semibold text-purple-300 flex items-center justify-between">
+                <span>Reference Files (Optional)</span>
+                {isUploading && <Loader2 className="w-2.5 h-2.5 animate-spin text-purple-400" />}
+              </label>
+              
+              <label className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] border border-dashed border-white/5 hover:border-purple-500/40 text-purple-300 text-[10px] font-semibold transition-all duration-300 cursor-pointer justify-center">
+                <Paperclip className="w-3.5 h-3.5" />
+                <span>Add Media Files</span>
+                <input
+                  type="file"
+                  multiple
+                  onChange={async (e) => {
+                    if (!e.target.files) return;
+                    setIsUploading(true);
+                    const files = Array.from(e.target.files);
+                    const newAtts: Attachment[] = [];
+                    for (const file of files) {
+                      if (file.size > 4 * 1024 * 1024) {
+                        alert(`File ${file.name} is too large. Max size is 4MB.`);
+                        continue;
+                      }
+                      try {
+                        const base64 = await new Promise<string>((resolve, reject) => {
+                          const reader = new FileReader();
+                          reader.readAsDataURL(file);
+                          reader.onload = () => resolve(reader.result as string);
+                          reader.onerror = err => reject(err);
+                        });
+                        const formatSize = (bytes: number): string => {
+                          if (bytes === 0) return '0 B';
+                          const k = 1024;
+                          const sizes = ['B', 'KB', 'MB'];
+                          const i = Math.floor(Math.log(bytes) / Math.log(k));
+                          return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+                        };
+                        newAtts.push({
+                          name: file.name,
+                          size: formatSize(file.size),
+                          type: file.type,
+                          base64
+                        });
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }
+                    setAttachments(prev => [...prev, ...newAtts]);
+                    setIsUploading(false);
+                    e.target.value = "";
+                  }}
+                  accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="hidden"
+                  disabled={isUploading}
+                />
+              </label>
+
+              {/* Attachments List */}
+              {attachments.length > 0 && (
+                <div className="space-y-1 max-h-24 overflow-y-auto mt-1.5 pr-1">
+                  {attachments.map((file, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-center justify-between p-1.5 rounded-lg bg-purple-950/20 border border-purple-500/10 text-[9px] text-purple-200/90"
+                    >
+                      <span className="truncate max-w-[80%] font-medium">{file.name} ({file.size})</span>
+                      <button
+                        type="button"
+                        onClick={() => setAttachments(prev => prev.filter((_, i) => i !== index))}
+                        className="p-0.5 rounded hover:bg-red-500/20 text-purple-400 hover:text-red-300 transition-colors cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="space-y-1">
               <label className="text-[9px] uppercase font-semibold text-purple-300 block">Email Address</label>
               <input

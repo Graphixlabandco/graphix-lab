@@ -4,7 +4,7 @@ import { parseNotes } from '@/lib/attachments';
 
 export async function POST(request: Request) {
   try {
-    const { clientName, clientEmail, serviceType, bookingDate, notes, id } = await request.json();
+    const { clientName, clientEmail, serviceType, bookingDate, notes, id, isClientRequest } = await request.json();
 
     const { briefText, attachments } = parseNotes(notes);
 
@@ -25,6 +25,84 @@ export async function POST(request: Request) {
         pass: gmailPassword
       }
     });
+
+    if (isClientRequest) {
+      const adminHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #0d0b18; color: #ffffff;">
+          <h2 style="color: #a855f7; border-bottom: 2px solid #a855f7; padding-bottom: 10px; text-transform: uppercase;">New Custom Service Idea!</h2>
+          <p>Hello Admin,</p>
+          <p>A client has submitted a custom project idea / request on the Graphix Lab services panel.</p>
+          
+          <div style="background-color: #131026; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #8b5cf6;">
+            <h3 style="margin-top: 0; color: #a855f7;">Client Info:</h3>
+            <p style="margin: 5px 0;"><strong>Name:</strong> ${clientName}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${clientEmail}</p>
+            <h3 style="margin-top: 15px; color: #a855f7;">Project Idea Brief:</h3>
+            <p style="margin: 5px 0; white-space: pre-wrap;">${briefText}</p>
+            ${attachments.length > 0 ? `
+              <p style="margin: 15px 0 5px 0;"><strong>Attached Reference Files:</strong></p>
+              <ul style="margin: 0; padding-left: 20px; color: #a855f7;">
+                ${attachments.map(file => `<li>${file.name} (${file.size})</li>`).join('')}
+              </ul>
+            ` : ''}
+          </div>
+          
+          <p>You can view and manage client requests inside the <a href="https://graphix-lab.vercel.app/#portal" style="color: #a855f7; text-decoration: underline;">Founder Board</a>.</p>
+        </div>
+      `;
+
+      const clientHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #0d0b18; color: #ffffff;">
+          <h2 style="color: #a855f7; border-bottom: 2px solid #a855f7; padding-bottom: 10px; text-transform: uppercase;">Custom Idea Received!</h2>
+          <p>Dear <strong>${clientName}</strong>,</p>
+          <p>We have successfully received your custom service idea and project specs! Our team is reviewing the requirements and will get back to you shortly.</p>
+          
+          <div style="background-color: #131026; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #8b5cf6;">
+            <h3 style="margin-top: 0; color: #a855f7;">Your Submitted Idea:</h3>
+            <p style="margin: 5px 0; white-space: pre-wrap;">${briefText}</p>
+            ${attachments.length > 0 ? `
+              <p style="margin: 15px 0 5px 0;"><strong>Attached Reference Files:</strong></p>
+              <ul style="margin: 0; padding-left: 20px; color: #a855f7;">
+                ${attachments.map(file => `<li>${file.name} (${file.size})</li>`).join('')}
+              </ul>
+            ` : ''}
+          </div>
+          
+          <p>Thank you for collaborating with Graphix Lab!</p>
+          <br/>
+          <p>Best Regards,<br/><strong>The Graphix Lab Team</strong></p>
+        </div>
+      `;
+
+      const emailAttachments = attachments.map(file => {
+        const base64Data = file.base64.split(',')[1] || file.base64;
+        return {
+          filename: file.name,
+          content: base64Data,
+          encoding: 'base64'
+        };
+      });
+
+      // Send to Admin
+      await transporter.sendMail({
+        from: `"Graphix Lab" <${senderEmail}>`,
+        to: adminEmail,
+        subject: `Graphix Lab | NEW CUSTOM SERVICE IDEA: ${clientName}`,
+        html: adminHtml,
+        attachments: emailAttachments
+      });
+
+      // Send to Client
+      await transporter.sendMail({
+        from: `"Graphix Lab" <${senderEmail}>`,
+        to: clientEmail,
+        subject: `Graphix Lab | Custom Idea Received!`,
+        html: clientHtml,
+        attachments: emailAttachments
+      });
+
+      return NextResponse.json({ success: true });
+    }
 
     // 1. Client Confirmation HTML Content
     const clientHtml = `
