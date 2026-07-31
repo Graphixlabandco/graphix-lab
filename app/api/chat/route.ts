@@ -60,7 +60,7 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       });
     }
 
-    // 1. Dynamically query Google's Model list to find the exact available Gemini model for this API key
+    // 1. Query Google's Model list to find the available model for this API key
     let modelName = "";
     try {
       const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
@@ -69,29 +69,50 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
         const listData = await listRes.json();
         const availableModels = listData.models || [];
         
-        // Find first active gemini model that supports generateContent
-        const targetModel = availableModels.find((m: any) => 
-          m.name && 
-          m.name.includes("gemini") && 
-          m.supportedGenerationMethods?.includes("generateContent") &&
-          !m.name.includes("gemini-2.5-flash") // Skip deprecated models if listed
+        // PRIORITIZE stable, free-tier Flash models over rate-limited Pro models
+        let targetModel = availableModels.find((m: any) => 
+          m.name === "models/gemini-1.5-flash-latest" && 
+          m.supportedGenerationMethods?.includes("generateContent")
         );
+        
+        if (!targetModel) {
+          targetModel = availableModels.find((m: any) => 
+            m.name === "models/gemini-1.5-flash" && 
+            m.supportedGenerationMethods?.includes("generateContent")
+          );
+        }
+        
+        if (!targetModel) {
+          targetModel = availableModels.find((m: any) => 
+            m.name && 
+            m.name.includes("flash") && 
+            m.supportedGenerationMethods?.includes("generateContent")
+          );
+        }
+
+        if (!targetModel) {
+          targetModel = availableModels.find((m: any) => 
+            m.name && 
+            m.name.includes("gemini") && 
+            m.supportedGenerationMethods?.includes("generateContent")
+          );
+        }
         
         if (targetModel) {
           modelName = targetModel.name;
-          console.log(`Discovered active model on API key: ${modelName}`);
+          console.log(`Auto-selected active model for API key: ${modelName}`);
         }
       }
     } catch (err) {
       console.warn("Could not fetch model list, attempting fallback model names.", err);
     }
 
-    // Default fallbacks if model listing is restricted or fails
+    // Default fallback model
     if (!modelName) {
-      modelName = "models/gemini-1.5-flash-latest"; // or "models/gemini-1.5-flash"
+      modelName = "models/gemini-1.5-flash-latest";
     }
 
-    // 2. Call the dynamically discovered model endpoint
+    // 2. Call the discovered model endpoint
     const generateUrl = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
     const response = await fetch(generateUrl, {
       method: 'POST',
@@ -108,22 +129,25 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
 
     if (!response.ok) {
       const errText = await response.text();
-      // Try one last hardcoded stable v1 fallback to models/gemini-1.5-flash-latest
-      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-      const fallbackRes = await fetch(fallbackUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents,
-          systemInstruction: { parts: [{ text: systemPrompt }] }
-        })
-      });
       
-      if (fallbackRes.ok) {
-        const fallbackData = await fallbackRes.json();
-        const reply = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (reply) {
-          return NextResponse.json({ reply });
+      // Secondary fallback to gemini-1.5-flash-latest if the discovered model (like pro) fails
+      if (modelName !== "models/gemini-1.5-flash-latest") {
+        const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+        const fallbackRes = await fetch(fallbackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            contents,
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+          })
+        });
+        
+        if (fallbackRes.ok) {
+          const fallbackData = await fallbackRes.json();
+          const reply = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (reply) {
+            return NextResponse.json({ reply });
+          }
         }
       }
       
@@ -139,9 +163,7 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
     return NextResponse.json({ reply });
 
   } catch (error: any) {
-    console.error("Gemini call failed, executing smart assistant responder:", error);
-    
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Gemini call failed, executing fallback responder:", error);
     
     // Highly comprehensive fallback responder representing Riya
     const msgLower = message.toLowerCase();
@@ -177,9 +199,7 @@ Be professional, polite, helpful, and concise. Always answer questions accuratel
       reply = "Our project pricing depends on your requirements. You can customize your project budget when submitting a booking request or customized service idea!";
     }
     
-    // We append the diagnostics ONLY if all model endpoints failed so the admin can debug
-    return NextResponse.json({ 
-      reply: `${reply}\n\n[Diagnostic: ${errorMessage}]`
-    });
+    // Clean reply with absolutely NO diagnostic logs printed to clients (completely clean response)
+    return NextResponse.json({ reply });
   }
 }
