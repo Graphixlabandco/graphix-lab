@@ -81,13 +81,7 @@ export default function Navbar({ onNavigate, onOpenAuth, currentUser, onLogout }
             >
               Book Design
             </button>
-            <button
-              id="nav-link-workflow"
-              onClick={() => handleNavClick("workflow")}
-              className="text-purple-200/80 hover:text-white transition-all duration-300 font-medium cursor-pointer"
-            >
-              Workflow
-            </button>
+
             <button
               id="nav-link-inquire"
               onClick={() => handleNavClick("inquire")}
@@ -192,13 +186,7 @@ export default function Navbar({ onNavigate, onOpenAuth, currentUser, onLogout }
                     <Calendar className="w-4 h-4 text-purple-400" />
                     <span>Book Design</span>
                   </button>
-                  <button
-                    onClick={() => handleNavClick("workflow")}
-                    className="btn-liquid-glass w-full justify-start gap-3 py-3 px-4 text-sm font-semibold text-purple-100 hover:text-white transition-all"
-                  >
-                    <Sparkles className="w-4 h-4 text-purple-400" />
-                    <span>Workflow</span>
-                  </button>
+
                   <button
                     onClick={() => handleNavClick("inquire")}
                     className="btn-liquid-glass w-full justify-start gap-3 py-3 px-4 text-sm font-semibold text-purple-100 hover:text-white transition-all"

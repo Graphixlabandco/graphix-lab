@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
+import SloMoReveal from "./SloMoReveal";
 
 interface HeroProps {
   onActionClick: (section: string) => void;
@@ -15,8 +16,8 @@ export default function Hero({ onActionClick }: HeroProps) {
       className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-transparent pt-20"
     >
       {/* Soft Radiant Ambient Glows to blend beautifully with the global universe background */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-purple-500/10 blur-[120px] pointer-events-none z-1" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none z-1" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-purple-500/5 blur-[140px] pointer-events-none z-1" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-indigo-500/5 blur-[140px] pointer-events-none z-1" />
 
       {/* Centered Background Logo Video Animation */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-0">
@@ -25,79 +26,60 @@ export default function Hero({ onActionClick }: HeroProps) {
           loop
           muted
           playsInline
-          className="w-full max-w-[1200px] h-full max-h-[80vh] object-contain opacity-25 mix-blend-screen"
+          className="w-full max-w-[1000px] h-full max-h-[70vh] object-contain opacity-20 mix-blend-screen"
         >
           <source src="/logo.mp4" type="video/mp4" />
         </video>
       </div>
 
-      {/* Main Content Container - Reduced glassmorphism opacity so the background video is highly visible */}
+      {/* Main Content Container */}
       <div 
         id="hero-content-wrapper"
-        className="relative z-10 max-w-5xl mx-auto px-6 text-center"
+        className="relative z-10 max-w-4xl mx-auto px-6 text-center"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="rounded-3xl bg-black/40 backdrop-blur-md border border-white/5 p-8 md:p-12 shadow-[0_16px_48px_rgba(0,0,0,0.6)] max-w-3xl mx-auto"
-        >
+        <div className="max-w-3xl mx-auto space-y-6">
           {/* Overline Badge */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6 }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-500/15 border border-purple-400/20 text-purple-200 text-xs font-semibold mb-4 uppercase tracking-widest"
+            transition={{ delay: 0.1, duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/15 text-purple-300 text-xs font-semibold uppercase tracking-widest"
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-300 animate-pulse" />
+            <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
             <span>Next-Gen Graphic Designing Platform</span>
           </motion.div>
           
-          {/* Subheading with Popup Animation */}
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.25 }}
-            className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-200 via-white to-purple-300 bg-clip-text text-transparent mb-5 tracking-wide drop-shadow-md"
-          >
-            Welcome to Graphix Lab
-          </motion.div>
+          {/* Subheading */}
+          <div className="text-sm md:text-base font-bold bg-gradient-to-r from-purple-300 via-purple-100 to-purple-200 bg-clip-text text-transparent tracking-widest uppercase">
+            <SloMoReveal text="Welcome to Graphix Lab" delay={0.2} />
+          </div>
 
           {/* Main H1 Heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.7 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-none mb-6 drop-shadow-lg"
-          >
-            WHERE IMAGINATION
-            <br />
-            <span className="text-gradient-neon">
-              MEETS GRAPHIC SCIENCE
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-none">
+            <span className="block overflow-hidden pb-1">
+              <SloMoReveal text="WHERE IMAGINATION" delay={0.35} />
             </span>
-          </motion.h1>
+            <span className="text-gradient-neon block overflow-hidden pb-1 mt-2">
+              <SloMoReveal text="MEETS GRAPHIC SCIENCE" delay={0.5} />
+            </span>
+          </h1>
 
-          {/* Updated Description */}
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.7 }}
-            className="text-purple-100/90 text-base md:text-lg font-medium leading-relaxed max-w-2xl mx-auto mb-10 drop-shadow-sm"
-          >
-            We don&apos;t just design — we engineer experiences that turn visitors into loyal customers.
-          </motion.p>
+          {/* Description */}
+          <p className="text-purple-200/50 text-sm md:text-base font-medium leading-relaxed max-w-xl mx-auto pb-4">
+            <SloMoReveal text="We don't just design — we engineer experiences that turn visitors into loyal customers." delay={0.65} />
+          </p>
 
           {/* Action CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.7 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-none"
+            transition={{ delay: 0.85, duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
           >
             <button
               id="hero-cta-booking"
               onClick={() => onActionClick("booking")}
-              className="btn-liquid-glass w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider text-white cursor-pointer"
+              className="btn-liquid-glass w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-white cursor-pointer"
             >
               <span>Instant Project Booking</span>
               <ArrowRight className="w-4 h-4 text-purple-300" />
@@ -106,12 +88,12 @@ export default function Hero({ onActionClick }: HeroProps) {
             <button
               id="hero-cta-portfolio"
               onClick={() => onActionClick("portfolio")}
-              className="btn-liquid-glass-secondary w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider text-purple-200 cursor-pointer"
+              className="btn-liquid-glass-secondary w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-purple-200 cursor-pointer"
             >
               <span>Explore Portfolio</span>
             </button>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

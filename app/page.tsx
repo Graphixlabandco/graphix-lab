@@ -13,7 +13,6 @@ import Footer from "@/components/Footer";
 import AuthPortal from "@/components/AuthPortal";
 import ClientDashboard from "@/components/ClientDashboard";
 import AdminDashboard from "@/components/AdminDashboard";
-import HostingPlan from "@/components/HostingPlan";
 import { motion, AnimatePresence } from "motion/react";
 import { Sliders, Sparkles, LayoutDashboard, CalendarRange, FolderLock } from "lucide-react";
 import RiyaChatbot from "@/components/RiyaChatbot";
@@ -35,7 +34,6 @@ export default function Home() {
   const portfolioRef = useRef<HTMLDivElement | null>(null);
   const bookingRef = useRef<HTMLDivElement | null>(null);
   const inquireRef = useRef<HTMLDivElement | null>(null);
-  const planRef = useRef<HTMLDivElement | null>(null);
   const portalRef = useRef<HTMLDivElement | null>(null);
 
   // Synchronize Supabase Auth
@@ -146,7 +144,6 @@ export default function Home() {
     if (sectionId === "hero" || sectionId === "home") targetRef = heroRef;
     if (sectionId === "portfolio") targetRef = portfolioRef;
     if (sectionId === "booking") targetRef = bookingRef;
-    if (sectionId === "workflow" || sectionId === "hosting-plan") targetRef = planRef;
     if (sectionId === "inquire") targetRef = inquireRef;
     if (sectionId === "portal") targetRef = portalRef;
 
@@ -212,10 +209,10 @@ export default function Home() {
             ) : currentUser ? (
               <motion.div
                 key="active-session"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.6 }}
+                initial={{ opacity: 0, y: 35, filter: "blur(10px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -35, filter: "blur(10px)" }}
+                transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
                 className="space-y-6"
               >
                 {/* Title */}
@@ -248,9 +245,10 @@ export default function Home() {
             ) : (
               <motion.div
                 key="unauthenticated-prompt"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, y: 35, filter: "blur(10px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -35, filter: "blur(10px)" }}
+                transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
                 className="rounded-3xl bg-white/[0.03] backdrop-blur-md border border-white/10 p-8 md:p-12 text-center max-w-2xl mx-auto shadow-2xl border-purple-500/10 space-y-6"
               >
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-400/20 text-purple-300">
@@ -277,10 +275,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Studio Production Strategy & Blueprint */}
-      <div ref={planRef} id="workflow">
-        <HostingPlan />
-      </div>
+
 
       {/* Inquiry Form */}
       <div ref={inquireRef} id="inquire">

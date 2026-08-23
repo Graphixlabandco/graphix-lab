@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Eye, X, ExternalLink, Sparkles, Send, Loader2, CheckCircle, Plus, Trash2, Paperclip } from "lucide-react";
 import Image from "next/image";
+import SloMoReveal from "./SloMoReveal";
 import { createClientRequest, getServicePortfolioImages, addServicePortfolioImage, deleteServicePortfolioImage, ServicePortfolioImage } from "@/lib/db";
 import { formatNotesWithAttachments, Attachment } from "@/lib/attachments";
 
@@ -195,31 +196,16 @@ export default function Portfolio({ currentUser }: PortfolioProps = {}) {
             GENERATIVE LABS
           </span>
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mt-4 uppercase">
-            OUR BRAND & DESIGN <span className="text-gradient-neon">SERVICES</span>
+            <span className="block overflow-hidden pb-1">
+              <SloMoReveal text="OUR BRAND & DESIGN" />
+            </span>
+            <span className="text-gradient-neon block overflow-hidden pb-1 mt-1">
+              <SloMoReveal text="SERVICES" delay={0.2} />
+            </span>
           </h2>
-          <p className="text-purple-200/60 text-sm md:text-base max-w-2xl mx-auto mt-4">
-            browse through our projects crafted with pixel-level, mathematical precision and premium design schemes
+          <p className="text-purple-200/50 text-sm max-w-2xl mx-auto mt-4 font-medium">
+            <SloMoReveal text="Browse through our projects crafted with pixel-level, mathematical precision and premium design schemes." delay={0.4} />
           </p>
-        </div>
-
-        {/* Category Filters */}
-        <div 
-          id="portfolio-categories"
-          className="flex flex-wrap items-center justify-center gap-3 mb-12"
-        >
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-5 py-2.5 text-xs font-semibold tracking-wide cursor-pointer ${
-                selectedCategory === cat
-                  ? "btn-liquid-glass text-purple-200"
-                  : "btn-liquid-glass-secondary text-purple-200/60 hover:text-white"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
         </div>
 
         {/* Grid layout */}
@@ -230,7 +216,7 @@ export default function Portfolio({ currentUser }: PortfolioProps = {}) {
         >
           <AnimatePresence mode="popLayout">
             {/* Render core filtered service cards */}
-            {filteredItems.map((item) => (
+            {portfolioItems.map((item) => (
               <motion.div
                 layout
                 key={item.id}

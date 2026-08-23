@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { createBooking } from "@/lib/db";
 import { formatNotesWithAttachments, Attachment } from "@/lib/attachments";
 import { Sparkles, Calendar, FileText, CheckCircle2, User, Mail, ArrowRight, ArrowLeft, Loader2, Paperclip, Trash2, Image as ImageIcon, Film, File } from "lucide-react";
+import SloMoReveal from "./SloMoReveal";
 
 interface BookingFormProps {
   currentUser: any;
@@ -224,10 +225,15 @@ export default function BookingForm({ currentUser, onOpenAuth, onSuccessRedirect
             SECURE ENGINE
           </span>
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mt-4">
-            BOOK A DESIGN <span className="text-gradient-neon">SESSION</span>
+            <span className="block overflow-hidden pb-1">
+              <SloMoReveal text="BOOK A DESIGN" />
+            </span>
+            <span className="text-gradient-neon block overflow-hidden pb-1 mt-1">
+              <SloMoReveal text="SESSION" delay={0.2} />
+            </span>
           </h2>
-          <p className="text-purple-200/60 text-sm md:text-base max-w-xl mx-auto mt-4">
-            Initialize your premium design contract today. Complete our secure 3-step dynamic glass booking wizard.
+          <p className="text-purple-200/50 text-sm max-w-xl mx-auto mt-4 font-medium">
+            <SloMoReveal text="Initialize your premium design contract today. Complete our secure 3-step dynamic glass booking wizard." delay={0.4} />
           </p>
         </div>
 
